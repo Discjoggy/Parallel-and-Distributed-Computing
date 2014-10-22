@@ -20,6 +20,10 @@ typedef unsigned long long ull;
 
 using namespace tbb;
 
+/**
+ * Gibt den übergebenen Vector in der Console aus.
+ * Gibt darüber hinaus nur Primzahlen aus, solange der Parameter all false ist.
+ */
 void print_vector(concurrent_vector<bool> &primes, bool all = false) {
 	for (ull i = 0; i < N; i++) {
 		if (primes[i]) {
@@ -31,6 +35,9 @@ void print_vector(concurrent_vector<bool> &primes, bool all = false) {
 	}
 }
 
+/**
+ * Setzt alle folgenden Mehrfache von i auf im Vector an der Stelle i auf false.
+ */
 void eliminate_primes(concurrent_vector<bool> &primes, ull i) {
 	if (primes[i - 2]) {
 		for (auto j = 2 * i; j <= N; j += i) {
@@ -39,6 +46,9 @@ void eliminate_primes(concurrent_vector<bool> &primes, ull i) {
 	}
 }
 
+/**
+ * Leert und initialisiert den übergebenen Vector in dem alle Einträge auf true gesetzt werden.
+ */
 void clear_and_initialize_primes(concurrent_vector<bool> &primes) {
 	primes.clear();
 	for (ull i = 2; i < N; i++) {
