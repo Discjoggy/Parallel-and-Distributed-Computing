@@ -1,113 +1,120 @@
-/*
- * File:   main.cpp
- * Author: Tobias Sibera
- *
- * Created on 14. Oktober 2014, 20:03
- */
+//============================================================================
+// Name        : Main.cpp
+// Author      : Tobias Sibera <Tobias.Sibera@HS-Osnabrueck.de>
+// Version     : 1.00
+// Copyright   : GPLv3
+// Description : Beispiel für das Parallelisieren einer for-Schleife mit tbb.
+//============================================================================
+
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-//#include <vector>
 #include <tbb/tbb.h>
-#include <tbb/tick_count.h>
-#include <limits.h>
-#include <algorithm>
 
-//#pragma warning( disable: 588)
+//#pragma warning(disable: 588)
 
-#define N 1<<20
+#define DEBUG 0
+#define RAND 100
+#define N 1 << 26
+
+typedef long long ll;
+typedef unsigned long long ull;
 
 using namespace tbb;
-using namespace std;
 
-typedef unsigned long long ull;
-typedef long long ll;
+/**
+ * Reduziert positive zahlen zu 1, negative zu -1.
+ */
+void make_binary(ll &value) {
+    if (value > 0) {
+        value = 1;
+    }
+    else if (value < 0) {
+        value = -1;
+    }
+#if DEBUG
+    std::cout << value << "\t";
+#endif
+}
 
+/**
+ * Kopiert die Werte vom source-Array in das destination-Array.
+ */
+void copy_values(ll* source, ll* destination) {
+	for (ll i = 0; i < N; ++i) {
+		destination[i] = source[i];
+	}
+}
 
-static tick_count start, end;
+/**
+ * Generiert Zufallszahlen und initialisiert diese in einem Array.
+ */
+void randomize(ll* values) {
+    srand(time(NULL));
+    for (ull i = 0; i < N; ++i) {
+        values[i] = (rand() % RAND - (RAND >> 1));
+#if DEBUG
+        std::cout << values[i] << "\t";
+#endif
+    }
+#if DEBUG
+    std::cout << std::endl << std::endl;
+#endif
+}
 
-class Body {
-        ll* array;
+/**
+ * Funktions-Objekt zur Parallelisierung der Prüfung und Zuweisung.
+ */
+class ParallelBinaryMaker {
+	ll* values;
 public:
-    Body(ll* a) : array(a) {}
+	ParallelBinaryMaker(ll* a) : values(a) {}
     void operator() (const blocked_range<ll>& range) const {
-        for (ull i = range.begin(); i != range.end(); i++) {
-            if (array[i] > 0) {
-                array[i] = 1;
-            }
-            else if (array[i] < 0) {
-                array[i] = -1;
-            }
-            else {
-                array[i] = 0;
-            }
-            //cout << array[i] << "\t";
+        for (ll i = range.begin(); i != range.end(); i++) {
+        	make_binary(values[i]);
         }
     }
 };
 
+/**
+ * Main-Methode.
+ */
 int main(int argc, char** argv) {
-    //ll randoms[N];
-    //short binaries[N];
-
+	tick_count start, end;
     ll *randoms = new ll[N];
-    short *binaries = new short[N];
+    ll *backup_randoms = new ll[N];
+    randomize(backup_randoms);
 
-
-    //vector<ull> randoms(size);
-    //vector<short> binaries(size, 0);
-
-    // Randomize
-    srand(time(NULL));
-    for (ull i = 0; i < N; i++) {
-        randoms[i] = (rand() % 100 - 50);
-        //cout << randoms[i] << "\t";
-    }
-    cout << endl;
 
     // Sequential loop
+    copy_values(backup_randoms, randoms);
     start = tick_count::now();
-    for (ull i = 0; i < N; i++) {
-        if (randoms[i] > 0) {
-            binaries[i] = 1;
-        }
-        else if (randoms[i] < 0) {
-            binaries[i] = -1;
-        }
-        else {
-                binaries[i] = 0;
-        }
-        //cout << binaries[i] << "\t";
+    for (ull i = 0; i < N; ++i) {
+    	make_binary(randoms[i]);
     }
     end = tick_count::now();
-    cout << endl << "Sequential:\t" << (end - start).seconds() << " s" << endl;
+    std::cout << std::endl << "Sequential:\t" << (end - start).seconds() << " s" << std::endl << std::endl;
+
 
     // Parallel loop
+    copy_values(backup_randoms, randoms);
     start = tick_count::now();
-    parallel_for(blocked_range<ll>(0, N), Body(randoms));
+    parallel_for(blocked_range<ll>(0, N), ParallelBinaryMaker(randoms));
     end = tick_count::now();
-    cout << endl << "Parallel:\t" << (end - start).seconds() << " s" << endl;
+    std::cout << std::endl << "Parallel:\t" << (end - start).seconds() << " s" << std::endl << std::endl;
 
-    // Parallel loop (Lamda)
+
+    // Parallel loop (with Lambda-Expression)
+    copy_values(backup_randoms, randoms);
     start = tick_count::now();
-    parallel_for(blocked_range<ll>(0, N), 
-        [=](const blocked_range<ll>& range) {
+    parallel_for(
+		blocked_range<ll>(0, N), [=](const blocked_range<ll> range) {
             for (ll i = range.begin(); i != range.end(); ++i) {
-                if (randoms[i] > 0) {
-                    randoms[i] = 1;
-                }
-                else if (randoms[i] < 0) {
-                    randoms[i] = -1;
-                }
-                else {
-                    randoms[i] = 0;
-                }
-            }
-        }
+            	make_binary(randoms[i]);
+    		}
+		}
     );
     end = tick_count::now();
-    cout << endl << "Parallel (L):\t" << (end - start).seconds() << " s" << endl;
+    std::cout << std::endl << "Parallel (L):\t" << (end - start).seconds() << " s" << std::endl << std::endl;
+
 
     return 0;
 }
