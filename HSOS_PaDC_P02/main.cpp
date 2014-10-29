@@ -10,10 +10,14 @@
 #include <tbb/blocked_range.h>
 #include <tbb/concurrent_vector.h>
 #include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
 #include <tbb/tick_count.h>
 
 #define DEBUG 0
-#define N 1 << 24
+#define USE_SEQ 0
+#define N 1000000000  // 10^9  =  50.847.534
+//#define N 10000000000 // 10^10 = 455.052.511
+
 typedef long long ll;
 typedef unsigned long long ull;
 
@@ -24,14 +28,22 @@ using namespace tbb;
  * Gibt darüber hinaus nur Primzahlen aus, solange der Parameter all false ist.
  */
 void print_vector(concurrent_vector<bool> &primes, bool all = false) {
+	ull primeCount = 0;
 	for (ull i = 0; i < N; i++) {
 		if (primes[i]) {
+			primeCount++;
+#if DEBUG
 			std::cout << i + 2 << " ";
+#endif
 		}
 		else if (all) {
+			primeCount++;
+#if DEBUG
 			std::cout << i + 2 << " ";
+#endif
 		}
 	}
+	std::cout << "primeCount: " << primeCount << std::endl;
 }
 
 /**
@@ -39,19 +51,9 @@ void print_vector(concurrent_vector<bool> &primes, bool all = false) {
  */
 void eliminate_primes(concurrent_vector<bool> &primes, ull i) {
 	if (primes[i - 2]) {
-		for (auto j = 2 * i; j <= N; j += i) {
+		for (ull j = 2 * i; j <= N; j += i) {
 			primes[j - 2] = false;
 		}
-	}
-}
-
-/**
- * Leert und initialisiert den übergebenen Vector in dem alle Einträge auf true gesetzt werden.
- */
-void clear_and_initialize_primes(concurrent_vector<bool> &primes) {
-	primes.clear();
-	for (ull i = 2; i < N; i++) {
-		primes.push_back(true);
 	}
 }
 
@@ -73,37 +75,29 @@ public:
  * Main-Methode.
  */
 int main(int argc, char** argv) {
+	//task_scheduler_init init(2);
 	tick_count start, end;
 	tick_count::interval_t dif1, dif2;
-	concurrent_vector<bool> primes;
-
+	concurrent_vector<bool> primes(N, true);
 
 	// Primes (Sequential)
-	clear_and_initialize_primes(primes);
-	start = tick_count::now();
+#if USE_SEQ
 	for (ull i = 2; i * i <= N; i++) {
 		eliminate_primes(primes, i);
 	}
 	end= tick_count::now();
 	dif1 = end - start;
-#if DEBUG
 	print_vector(primes, 0);
+	std::cout << std::endl << "Sequential:\t" << dif1.seconds() << " s, primeCount: \t" << primeCount << std::endl << std::endl;
 #endif
-	std::cout << std::endl << "Sequential:\t" << dif1.seconds() << " s" << std::endl << std::endl;
-
 
 	// Primes (Parallel)
-	clear_and_initialize_primes(primes);
 	start = tick_count::now();
 	parallel_for(blocked_range<ull>(2, N), ParallelEratosthenes(primes));
 	end = tick_count::now();
 	dif2 = end - start;
-#if DEBUG
 	print_vector(primes, 0);
-#endif
 	std::cout << std::endl << "Parallel:\t" << dif2.seconds() << " s" << std::endl << std::endl;
 
-	// Difference (Normally parallel should be faster)
-	std::cout << std::endl << "Differenz:\t" << (dif1 - dif2).seconds() << " s" << std::endl << std::endl;
     return 0;
 }
