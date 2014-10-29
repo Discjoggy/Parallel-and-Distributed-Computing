@@ -13,8 +13,7 @@
 #include <tbb/tick_count.h>
 
 #define DEBUG 0
-#define N 1 << 20
-
+#define N 1 << 24
 typedef long long ll;
 typedef unsigned long long ull;
 
@@ -75,6 +74,7 @@ public:
  */
 int main(int argc, char** argv) {
 	tick_count start, end;
+	tick_count::interval_t dif1, dif2;
 	concurrent_vector<bool> primes;
 
 
@@ -84,11 +84,12 @@ int main(int argc, char** argv) {
 	for (ull i = 2; i * i <= N; i++) {
 		eliminate_primes(primes, i);
 	}
-	end = tick_count::now();
+	end= tick_count::now();
+	dif1 = end - start;
 #if DEBUG
 	print_vector(primes, 0);
 #endif
-	std::cout << std::endl << "Sequential:\t" << (end - start).seconds() << " s" << std::endl << std::endl;
+	std::cout << std::endl << "Sequential:\t" << dif1.seconds() << " s" << std::endl << std::endl;
 
 
 	// Primes (Parallel)
@@ -96,10 +97,13 @@ int main(int argc, char** argv) {
 	start = tick_count::now();
 	parallel_for(blocked_range<ull>(2, N), ParallelEratosthenes(primes));
 	end = tick_count::now();
+	dif2 = end - start;
 #if DEBUG
 	print_vector(primes, 0);
 #endif
-	std::cout << std::endl << "Parallel:\t" << (end - start).seconds() << " s" << std::endl << std::endl;
+	std::cout << std::endl << "Parallel:\t" << dif2.seconds() << " s" << std::endl << std::endl;
 
+	// Difference (Normally parallel should be faster)
+	std::cout << std::endl << "Differenz:\t" << (dif1 - dif2).seconds() << " s" << std::endl << std::endl;
     return 0;
 }
