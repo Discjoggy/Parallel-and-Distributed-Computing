@@ -75,14 +75,15 @@ inline void MatrixMultSeq(Matrix& A, Matrix& B, Matrix& C, size_t aFrom, size_t 
 *  @param  C22  Matrix C11 Teilmatrix (5. Quadrant).
 *  @param  n    Matrixdimension (NxN).
 */
-inline void MatrixIncreaseAndCopy(Matrix& C, Matrix& C11, Matrix& C12, Matrix& C21, Matrix& C22, size_t n) {
+inline void MatrixIncreaseAndCopySeq(Matrix& C, Matrix& C11, Matrix& C12, Matrix& C21, Matrix& C22, size_t n) {
 	for (size_t i = 0; i < n; ++i) {
 		size_t iDif = i + n;
 		for (size_t j = 0; j < n; ++j) {
-			C[i]		[j] 	+= 	C11[i][j];
-			C[i]	[j + n]	+=	C12[i][j];
+			size_t jDif = j + n;
+			C[i]	[j] 	+= 	C11[i][j];
+			C[i]	[jDif]	+=	C12[i][j];
 			C[iDif]	[j] 	+= 	C21[i][j];
-			C[iDif]	[j + n]	+=	C22[i][j];
+			C[iDif]	[jDif]	+=	C22[i][j];
 		}
 	}
 }
@@ -133,7 +134,8 @@ struct MatrixAddPBody : public MatrixPBody {
 *  @brief  Funktionsobjekt zum parallelisierten Multiplizieren.
 */
 struct MatrixMultPBody : public MatrixPBody {
-	size_t cFrom, cTo;
+	size_t cFrom;
+	size_t cTo;
 
 	MatrixMultPBody(Matrix& __A, Matrix& __B, Matrix& __C, size_t __cFrom, size_t __cTo) : MatrixPBody(__A, __B, __C), cFrom(__cFrom), cTo(__cTo) {}
 
@@ -143,6 +145,30 @@ struct MatrixMultPBody : public MatrixPBody {
 				for (size_t k = cFrom; k < cTo; ++k) {	// Zeile X Spalte
 					C[i][j] += A[i][k] * B[k][j];
 				}
+			}
+		}
+	}
+};
+
+/**
+*  @brief  Funktionsobjekt zum parallelisierten Addieren von vier Teilmatrizen.
+*/
+struct MatrixIncreaseAndCopyBody : public MatrixPBody {
+	Matrix& C21;
+	Matrix& C22;
+	size_t n;
+
+	MatrixIncreaseAndCopyBody(Matrix& __C, Matrix& __C11, Matrix& __C12, Matrix& __C21, Matrix& __C22, size_t n) : MatrixPBody(__C11, __C12, __C), C21(__C21), C22(__C22), n(n)  {}
+
+	void operator() (const tbb::blocked_range2d<size_t>& range) const {
+		for (size_t i = range.rows().begin(); i != range.rows().end(); ++i) {
+			size_t iDif = i + n;
+			for (size_t j = range.cols().begin(); j != range.cols().end(); ++j) {
+				size_t jDif = j + n;
+				C[i]	[j] 	+= 	A[i][j];
+				C[i]	[jDif]	+=	B[i][j];
+				C[iDif]	[j] 	+= 	C21[i][j];
+				C[iDif]	[jDif]	+=	C22[i][j];
 			}
 		}
 	}
