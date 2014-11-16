@@ -307,7 +307,19 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 #endif
 		strassenRecursive(tmp1, B22, M5, newN);
 
+		for (size_t i = 0; i < newN; ++i) {
+			for (size_t j = 0; j < newN; ++j) {
+				C11[i][j] = M4[i][j] - M5[i][j];
+				C12[i][j] = M3[i][j] + M5[i][j];
+				C21[i][j] = M2[i][j] + M4[i][j];
+				C22[i][j] = M3[i][j] - M2[i][j];
+			}
+		}
 
+		M2.clear(); M2.shrink_to_fit();
+		M3.clear(); M3.shrink_to_fit();
+		M4.clear(); M4.shrink_to_fit();
+		M5.clear(); M5.shrink_to_fit();
 
 
 		// M1 = (A11 + A22) * (B11 + B22)
@@ -344,22 +356,16 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 #endif
 		strassenRecursive(tmp1, tmp2, M7, newN);
 
-		for (size_t i = 0; i < newN; ++i) {
-			for (size_t j = 0; j < newN; ++j) {
-				C11[i][j] = M1[i][j] + M4[i][j] - M5[i][j] + M7[i][j];
-				C12[i][j] = M3[i][j] + M5[i][j];
-				C21[i][j] = M2[i][j] + M4[i][j];
-				C22[i][j] = M1[i][j] - M2[i][j] + M3[i][j] + M6[i][j];
+		for (size_t i = 0; i < newN; i++) {
+			for (size_t j = 0; j < newN; j++) {
+				C11[i][j] += M1[i][j] + M7[i][j];
+				C22[i][j] += M1[i][j] + M6[i][j];
 			}
 		}
 
 		MatrixIncreaseAndCopy(C, C11, C12, C21, C22, newN);
 
 		M1.clear(); M1.shrink_to_fit();
-		M2.clear(); M2.shrink_to_fit();
-		M3.clear(); M3.shrink_to_fit();
-		M4.clear(); M4.shrink_to_fit();
-		M5.clear(); M5.shrink_to_fit();
 		M6.clear(); M6.shrink_to_fit();
 		M7.clear(); M7.shrink_to_fit();
 
