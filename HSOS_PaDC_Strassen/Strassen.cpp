@@ -9,11 +9,6 @@
 //============================================================================
 
 #include "Strassen.h"
-#include "Helper.h"
-#include "Matrix.h"
-#include <vector>
-#include <tbb/blocked_range2d.h>
-#include <tbb/parallel_for.h>
 
 /**
 *  @brief  Konstruktor der Strassen-Klasse.
@@ -29,11 +24,12 @@ Strassen::Strassen(Matrix& __A, Matrix& __B, Matrix& __C, size_t __n) : A(__A), 
 *  @brief  Vererbte und ueberschriebene Methode der tbb::task-Klasse,
 *  welche die erbende Klasse in einem Task ausfuehren laesst. Der
 *  Strassen-Algorithmus wird in dieser Methode rekursiv ausgefuerht.
+*  @return tbb::task.
 */
 tbb::task* Strassen::execute() {
 	size_t newN = n >> 1;
 
-	if (n <= SEQ_SIZE) {
+	if (n <= CUT_OFF) {
 #if USE_SEQ_IN_STRASSEN_TASKS
 		MatrixMultSeq(A, B, C, 0, n, 0, n, 0, n);
 #else
@@ -50,29 +46,31 @@ tbb::task* Strassen::execute() {
 		Matrix B11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix B12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix B21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-		Matrix B22 (std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
+		Matrix B22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 
 		Matrix C11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 
-		for (size_t i = 0; i < newN; i++) {
-			for (size_t j = 0; j < newN; j++) {
+		for (size_t i = 0; i < newN; ++i) {
+			size_t iPlusNewN = i + newN;
+			for (size_t j = 0; j < newN; ++j) {
+				size_t jPlusNewN = j + newN;
 				A11[i][j] = A[i][j];
-				A12[i][j] = A[i][j + newN];
-				A21[i][j] = A[i + newN][j];
-				A22[i][j] = A[i + newN][j + newN];
+				A12[i][j] = A[i][jPlusNewN];
+				A21[i][j] = A[iPlusNewN][j];
+				A22[i][j] = A[iPlusNewN][jPlusNewN];
 
 				B11[i][j] = B[i][j];
-				B12[i][j] = B[i][j + newN];
-				B21[i][j] = B[i + newN][j];
-				B22[i][j] = B[i + newN][j + newN];
+				B12[i][j] = B[i][jPlusNewN];
+				B21[i][j] = B[iPlusNewN][j];
+				B22[i][j] = B[iPlusNewN][jPlusNewN];
 
 				C11[i][j] = C[i][j];
-				C12[i][j] = C[i][j + newN];
-				C21[i][j] = C[i + newN][j];
-				C22[i][j] = C[i + newN][j + newN];
+				C12[i][j] = C[i][jPlusNewN];
+				C21[i][j] = C[iPlusNewN][j];
+				C22[i][j] = C[iPlusNewN][jPlusNewN];
 			}
 		}
 
@@ -136,6 +134,7 @@ tbb::task* Strassen::execute() {
 		tmp1M4.clear(); tmp1M4.shrink_to_fit();
 		tmp1M5.clear(); tmp1M5.shrink_to_fit();
 
+
 		// M1 = (A11 + A22) * (B11 + B22)
 		Matrix M1(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix tmp1M1(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
@@ -176,14 +175,18 @@ tbb::task* Strassen::execute() {
 		set_ref_count(4);
 		spawn_and_wait_for_all(*new (allocate_child()) Strassen(tmp1M7, tmp2M7, M7, newN));
 
-		for (size_t i = 0; i < newN; i++) {
-			for (size_t j = 0; j < newN; j++) {
+		for (size_t i = 0; i < newN; ++i) {
+			for (size_t j = 0; j < newN; ++j) {
 				C11[i][j] += M1[i][j] + M7[i][j];
 				C22[i][j] += M1[i][j] + M6[i][j];
 			}
 		}
 
-		MatrixIncreaseAndCopy(C, C11, C12, C21, C22, newN);
+#if USE_SEQ_IN_STRASSEN_TASKS
+		MatrixIncreaseAndCopySeq(C, C11, C12, C21, C22, newN);
+#else
+		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixIncreaseAndCopyBody(C, C11, C12, C21, C22, newN));
+#endif
 
 		M1.clear(); M1.shrink_to_fit();
 		M6.clear(); M6.shrink_to_fit();
@@ -226,8 +229,8 @@ tbb::task* Strassen::execute() {
 void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 	size_t newN = n >> 1;
 
-	if (n <= SEQ_SIZE) {
-#if USE_SEQ_IN_STRASSEN_TASKS
+	if (n <= CUT_OFF) {
+#if USE_SEQ_IN_STRASSEN
 		MatrixMultSeq(A, B, C, 0, n, 0, n, 0, n);
 #else
 		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, n, 0, n), MatrixMultPBody(A, B, C, 0, n));
@@ -243,29 +246,31 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 		Matrix B11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix B12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix B21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-		Matrix B22 (std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
+		Matrix B22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 
 		Matrix C11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix C22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 
-		for (size_t i = 0; i < newN; i++) {
-			for (size_t j = 0; j < newN; j++) {
+		for (size_t i = 0; i < newN; ++i) {
+			size_t iPlusNewN = i + newN;
+			for (size_t j = 0; j < newN; ++j) {
+				size_t jPlusNewN = j + newN;
 				A11[i][j] = A[i][j];
-				A12[i][j] = A[i][j + newN];
-				A21[i][j] = A[i + newN][j];
-				A22[i][j] = A[i + newN][j + newN];
+				A12[i][j] = A[i][jPlusNewN];
+				A21[i][j] = A[iPlusNewN][j];
+				A22[i][j] = A[iPlusNewN][jPlusNewN];
 
 				B11[i][j] = B[i][j];
-				B12[i][j] = B[i][j + newN];
-				B21[i][j] = B[i + newN][j];
-				B22[i][j] = B[i + newN][j + newN];
+				B12[i][j] = B[i][jPlusNewN];
+				B21[i][j] = B[iPlusNewN][j];
+				B22[i][j] = B[iPlusNewN][jPlusNewN];
 
 				C11[i][j] = C[i][j];
-				C12[i][j] = C[i][j + newN];
-				C21[i][j] = C[i + newN][j];
-				C22[i][j] = C[i + newN][j + newN];
+				C12[i][j] = C[i][jPlusNewN];
+				C21[i][j] = C[iPlusNewN][j];
+				C22[i][j] = C[iPlusNewN][jPlusNewN];
 			}
 		}
 
@@ -273,7 +278,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 		// M2 = (A21 + A22) * B11
 		Matrix tmp1(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix M2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixAddSeq(A21, A22, tmp1, newN);
 #else
 		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixAddPBody(A21, A22, tmp1));
@@ -282,7 +287,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 
 		// M3 = A11 * (B12 - B22)
 		Matrix M3(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixSubSeq(B12, B22, tmp1, newN);
 #else
 		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixSubPBody(B12, B22, tmp1));
@@ -291,7 +296,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 
 		// M4 = A22 * (B21 - B11)
 		Matrix M4(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixSubSeq(B21, B11, tmp1, newN);
 #else
 		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixSubPBody(B21, B11, tmp1));
@@ -300,7 +305,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 
 		// M5 = (A11 + A12) * B22128
 		Matrix M5(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixAddSeq(A11, A12, tmp1, newN);
 #else
 		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixAddPBody(A11, A12, tmp1));
@@ -325,7 +330,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 		// M1 = (A11 + A22) * (B11 + B22)
 		Matrix tmp2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
 		Matrix M1(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixAddSeq(A11, A22, tmp1, newN);
 		MatrixAddSeq(B11, B22, tmp2, newN);
 #else
@@ -336,7 +341,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 
 		// M6 = (A21 - A11) * (B11 + B12)
 		Matrix M6(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixSubSeq(A21, A11, tmp1, newN);
 		MatrixAddSeq(B11, B12, tmp2, newN);
 #else
@@ -347,7 +352,7 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 
 		// M7 = (A12 - A22) * (B21 + B22)
 		Matrix M7(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN, 0)));
-#if USE_SEQ_IN_STRASSEN_TASKS
+#if USE_SEQ_IN_STRASSEN
 		MatrixSubSeq(A12, A22, tmp1, newN);
 		MatrixAddSeq(B21, B22, tmp2, newN);
 #else
@@ -356,14 +361,18 @@ void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n) {
 #endif
 		strassenRecursive(tmp1, tmp2, M7, newN);
 
-		for (size_t i = 0; i < newN; i++) {
-			for (size_t j = 0; j < newN; j++) {
+		for (size_t i = 0; i < newN; ++i) {
+			for (size_t j = 0; j < newN; ++j) {
 				C11[i][j] += M1[i][j] + M7[i][j];
 				C22[i][j] += M1[i][j] + M6[i][j];
 			}
 		}
 
-		MatrixIncreaseAndCopy(C, C11, C12, C21, C22, newN);
+#if USE_SEQ_IN_STRASSEN
+		MatrixIncreaseAndCopySeq(C, C11, C12, C21, C22, newN);
+#else
+		tbb::parallel_for(tbb::blocked_range2d<size_t>(0, newN, 0, newN), MatrixIncreaseAndCopyBody(C, C11, C12, C21, C22, newN));
+#endif
 
 		M1.clear(); M1.shrink_to_fit();
 		M6.clear(); M6.shrink_to_fit();
