@@ -165,13 +165,14 @@ tbb::task* Langford::execute() {
 					taskList.push_back(*new (allocate_child()) Langford(newTree, lvl - 1, size, count));
 					++taskCount;
 				}
-
 			}
 		}
 		candidates.clear();
 		candidates.shrink_to_fit();
-		set_ref_count(++taskCount);
-		spawn_and_wait_for_all(taskList);
+		if (taskCount > 0) {
+			set_ref_count(++taskCount);
+			spawn_and_wait_for_all(taskList);
+		}
 	}
 	return NULL;
 }
