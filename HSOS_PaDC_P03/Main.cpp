@@ -23,7 +23,7 @@ tbb::atomic<size_t> countAtomic;
 */
 int main () {
 	size_t ln = 12;
-	size_t size = 2 * ln;
+	size_t size = ln << 1;
 
 	if ((ln - ln / 2) % 2) {
 		std::cout << "Fuer " << ln << " gibt es keine Loesung!";
@@ -47,12 +47,12 @@ int main () {
 	std::cout << "Seq. Bit: Time was " << (t1 - t0).seconds() << "s" << " - Non-Tasks\n";
 	std::cout << "Count: " << count << "\n\n";
 
-	count = 0;
-	t0 = tick_count::now();
-	LangfordRecursive(arr, ln, size, count);
-	t1 = tick_count::now();
-	std::cout << "Seq: Time was " << (t1 - t0).seconds() << "s" << " - Non-Tasks\n";
-	std::cout << "Count: " << count << "\n\n";
+//	count = 0;
+//	t0 = tick_count::now();
+//	LangfordRecursive(arr, ln, size, count);
+//	t1 = tick_count::now();
+//	std::cout << "Seq: Time was " << (t1 - t0).seconds() << "s" << " - Non-Tasks\n";
+//	std::cout << "Count: " << count << "\n\n";
 
 	t0 = tick_count::now();
 	task::spawn_root_and_wait(*new (task::allocate_root()) Langford(0, ln, size, countAtomic));
