@@ -144,7 +144,7 @@ tbb::task* Langford::execute() {
 		tbb::task_list taskList;
 		size_t taskCount = 0;
 		size_t realEnd = size - lvl - 1;
-		std::vector<size_t> candidates(realEnd >> 1);
+		std::vector<size_t> candidates(0);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
 			if (!(tree & (1 << i)) && !(tree & (1 << j))) {
