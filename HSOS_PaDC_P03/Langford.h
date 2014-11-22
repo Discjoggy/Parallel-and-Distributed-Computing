@@ -14,6 +14,11 @@
 #include <iostream>
 #include <tbb/atomic.h>
 #include <tbb/task.h>
+#include <vector>
+
+void printBits(size_t& x, size_t& size);
+
+size_t reverse(size_t x, size_t size);
 
 size_t nextClearBit(bool* arr, size_t n, size_t i);
 
