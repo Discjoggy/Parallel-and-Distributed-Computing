@@ -20,7 +20,7 @@ void printBits(size_t& x, size_t& size) {
     	if (i == half) {
     		std::cout << ' ';
     	}
-        std::cout << (x & ((size_t) 1 << (half - i)) ? '1' : '0');
+            std::cout << (x & ((size_t) 1 << (half - i + 1)) ? '1' : '0');
     }
     std::cout << " (" << x << ')';
 }
@@ -69,6 +69,7 @@ void LangfordRecursiveBit(size_t tree, size_t lvl, size_t& size, size_t& count) 
 	}
 	else {
 		size_t realEnd = size - lvl - 1;
+		size_t half = size >> 1;
 		std::vector<size_t> candidates(0);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
@@ -76,10 +77,12 @@ void LangfordRecursiveBit(size_t tree, size_t lvl, size_t& size, size_t& count) 
 				bool symmetric = false;
 				size_t newTree = tree + (1 << i) + (1 << j);
 				size_t revTree = reverse(newTree, size);
-				for (size_t k = 0; k < candidates.size(); ++k)  {
-					if (candidates[k] == revTree) {
-						symmetric = true;
-						break;
+				if (lvl == half || lvl == half - 1) {
+					for (size_t k = 0; k < candidates.size(); ++k)  {
+						if (candidates[k] == revTree) {
+							symmetric = true;
+							break;
+						}
 					}
 				}
 				if (!symmetric) {
@@ -144,6 +147,7 @@ tbb::task* Langford::execute() {
 		tbb::task_list taskList;
 		size_t taskCount = 0;
 		size_t realEnd = size - lvl - 1;
+		size_t half = size >> 1;
 		std::vector<size_t> candidates(0);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
@@ -151,11 +155,12 @@ tbb::task* Langford::execute() {
 				bool symmetric = false;
 				size_t newTree = tree + (1 << i) + (1 << j);
 				size_t revTree = reverse(newTree, size);
-				candidates.push_back(newTree);
-				for (size_t j = 0; j < candidates.size() - 1; ++j)  {
-					if (candidates[j] == revTree) {
-						symmetric = true;
-						break;
+				if (lvl == half || lvl == half - 1) {
+					for (size_t j = 0; j < candidates.size(); ++j)  {
+						if (candidates[j] == revTree) {
+							symmetric = true;
+							break;
+						}
 					}
 				}
 				if (!symmetric) {
@@ -166,7 +171,7 @@ tbb::task* Langford::execute() {
 			}
 		}
 		candidates.clear();
-		candidates.shrink_to_fit();
+		//candidates.shrink_to_fit();
 		if (taskCount > 0) {
 			set_ref_count(++taskCount);
 			spawn_and_wait_for_all(taskList);
