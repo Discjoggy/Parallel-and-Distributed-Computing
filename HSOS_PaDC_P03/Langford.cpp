@@ -69,28 +69,25 @@ void LangfordRecursiveBit(size_t tree, size_t lvl, size_t& size, size_t& count) 
 	}
 	else {
 		size_t realEnd = size - lvl - 1;
-		std::vector<size_t> candidates(realEnd >> 2);
+		std::vector<size_t> candidates(0);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
 			if (!(tree & (1 << i)) && !(tree & (1 << j))) {
 				bool symmetric = false;
 				size_t newTree = tree + (1 << i) + (1 << j);
 				size_t revTree = reverse(newTree, size);
-				candidates.push_back(newTree);
-				for (size_t k = 0; k < candidates.size() - 1; ++k)  {
+				for (size_t k = 0; k < candidates.size(); ++k)  {
 					if (candidates[k] == revTree) {
 						symmetric = true;
 						break;
 					}
 				}
 				if (!symmetric) {
+					candidates.push_back(newTree);
 					LangfordRecursiveBit(newTree, lvl - 1, size, count);
 				}
-
 			}
 		}
-		candidates.clear();
-		candidates.shrink_to_fit();
 	}
 }
 
@@ -162,6 +159,7 @@ tbb::task* Langford::execute() {
 					}
 				}
 				if (!symmetric) {
+					candidates.push_back(newTree);
 					taskList.push_back(*new (allocate_child()) Langford(newTree, lvl - 1, size, count));
 					++taskCount;
 				}
