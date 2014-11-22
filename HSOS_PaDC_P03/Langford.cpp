@@ -69,16 +69,16 @@ void LangfordRecursiveBit(size_t tree, size_t lvl, size_t& size, size_t& count) 
 	}
 	else {
 		size_t realEnd = size - lvl - 1;
-		std::vector<size_t> possibles(realEnd >> 2);
+		std::vector<size_t> candidates(realEnd >> 2);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
 			if (!(tree & (1 << i)) && !(tree & (1 << j))) {
 				bool symmetric = false;
 				size_t newTree = tree + (1 << i) + (1 << j);
 				size_t revTree = reverse(newTree, size);
-				possibles.push_back(newTree);
-				for (size_t k = 0; k < possibles.size() - 1; ++k)  {
-					if (possibles[k] == revTree) {
+				candidates.push_back(newTree);
+				for (size_t k = 0; k < candidates.size() - 1; ++k)  {
+					if (candidates[k] == revTree) {
 						symmetric = true;
 						break;
 					}
@@ -89,8 +89,8 @@ void LangfordRecursiveBit(size_t tree, size_t lvl, size_t& size, size_t& count) 
 
 			}
 		}
-		possibles.clear();
-		possibles.shrink_to_fit();
+		candidates.clear();
+		candidates.shrink_to_fit();
 	}
 }
 
@@ -147,16 +147,16 @@ tbb::task* Langford::execute() {
 		tbb::task_list taskList;
 		size_t taskCount = 0;
 		size_t realEnd = size - lvl - 1;
-		std::vector<size_t> possibles(realEnd >> 1);
+		std::vector<size_t> candidates(realEnd >> 1);
 		for (size_t i = 0; i < realEnd; ++i) {
 			size_t j = i + lvl + 1;
 			if (!(tree & (1 << i)) && !(tree & (1 << j))) {
 				bool symmetric = false;
 				size_t newTree = tree + (1 << i) + (1 << j);
 				size_t revTree = reverse(newTree, size);
-				possibles.push_back(newTree);
-				for (size_t j = 0; j < possibles.size() - 1; ++j)  {
-					if (possibles[j] == revTree) {
+				candidates.push_back(newTree);
+				for (size_t j = 0; j < candidates.size() - 1; ++j)  {
+					if (candidates[j] == revTree) {
 						symmetric = true;
 						break;
 					}
@@ -168,10 +168,10 @@ tbb::task* Langford::execute() {
 
 			}
 		}
+		candidates.clear();
+		candidates.shrink_to_fit();
 		set_ref_count(++taskCount);
 		spawn_and_wait_for_all(taskList);
-		possibles.clear();
-		possibles.shrink_to_fit();
 	}
 	return NULL;
 }
