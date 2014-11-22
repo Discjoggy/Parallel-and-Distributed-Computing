@@ -24,16 +24,13 @@ tbb::atomic<size_t> countAtomic;
 int main () {
 	size_t ln = 12;
 	size_t size = ln << 1;
-
-	if ((ln - ln / 2) % 2) {
+	tick_count t0, t1;
+	size_t count = 0;
+	if ((ln - (ln >> 1)) % 2) {
 		std::cout << "Fuer " << ln << " gibt es keine Loesung!";
 		return 0;
 	}
 	std::cout << "TEST: L(2, " << ln << ")\n";
-
-	tick_count t0, t1;
-	size_t count = 0;
-	bool* arr = new bool[size];
 
 #if USE_SPECIFIC_THREAD_COUNT
 	LOG(logDEBUG) << "Using " << NO_THREADS << " threads";
@@ -46,13 +43,6 @@ int main () {
 	t1 = tick_count::now();
 	std::cout << "Seq. Bit: Time was " << (t1 - t0).seconds() << "s" << " - Non-Tasks\n";
 	std::cout << "Count: " << count << "\n\n";
-
-//	count = 0;
-//	t0 = tick_count::now();
-//	LangfordRecursive(arr, ln, size, count);
-//	t1 = tick_count::now();
-//	std::cout << "Seq: Time was " << (t1 - t0).seconds() << "s" << " - Non-Tasks\n";
-//	std::cout << "Count: " << count << "\n\n";
 
 	t0 = tick_count::now();
 	task::spawn_root_and_wait(*new (task::allocate_root()) Langford(0, ln, size, countAtomic));
