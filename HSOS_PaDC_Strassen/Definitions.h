@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : Main.cpp
+// Name        : Definitions.h
 // Author      : Tobias Sibera <Tobias.Sibera@HS-Osnabrueck.de>
 //				 Jens Overmoeller <Jens.Overmoeller@HS-Osnabrueck.de>
 // Version     : 1.00
@@ -25,9 +25,9 @@ typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 #define USE_SEQ_IN_STRASSEN 1			// Schleifen im Non-Task-Algorithmus sequentiell ausfuehren?
 #define USE_SEQ_IN_STRASSEN_TASKS 1		// Schleifen im Task-Algorithmus sequentiell ausfuehren?
 
-#define POW 9							// 2^POW
-#define SIZE 2 << POW					// 4 - Dimension der Matrix (SIZE x SIZE)
-#define SEQ_SIZE 2 << (POW / 2)			// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. SEQ_SIZE x SEQ_SIZE = 4!
+#define POW 3							// 2^POW
+#define SIZE (2 << POW)					// 4 - Dimension der Matrix (SIZE x SIZE)
+#define CUT_OFF (2 << (POW >> 1))		// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4!
 //#define SIZE 2 << 9					// 1024
 //#define SIZE 1024						// 2^10
 //#define SIZE 2048						// 2^11
