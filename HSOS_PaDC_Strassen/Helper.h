@@ -84,7 +84,6 @@ inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
 	}
 	for (size_t i = 0; i < mSize; ++i) {
 		for (size_t j = 0; j < mSize; ++j) {
-			//std::cout << " #" << M[i][j] << "# ";
 			std::cout << std::setw(STD_WIDTH) << std::setfill(' ') << std::setprecision(STD_PRECISION) << static_cast<M_VAL_TYPE>(M[i][j]);
 		}
 		std::cout << std::endl;
@@ -98,13 +97,14 @@ inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
 *  @param  A  Matrix A.
 *  @param  B  Matrix B.
 *  @param  n  Matrixdimension (NxN).
+*  @return 0 falls beide Matrizen gleich sind, andernfalls < 0
 */
 inline int compareMatrices(Matrix& A, Matrix& B, size_t n) {
 	for (size_t i = 0; i < n; ++i) {
 		for (size_t j = 0; j < n; ++j) {
 			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
 				std::cout << A[i][j] << ":" << B[i][j] << std::endl;
-				return 1;
+				return -1;
 			}
 		}
 	}
