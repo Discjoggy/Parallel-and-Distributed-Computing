@@ -19,6 +19,10 @@
 #include <time.h>
 #include <math.h>			// fabs
 
+inline int isPowerOfTwo(size_t x) {
+  return ((x != 0) && ((x & (~x + 1)) == x));
+}
+
 /**
 *  @brief  Initialisiert den Zufallsgenerator.
 */
@@ -47,9 +51,9 @@ inline void initializeRandpriomMatrix(Matrix& M, size_t size) {
 
 /**
 *  @brief  Setzt alle Werte einer Matrix auf den uebergebenen Wert.
-*  @param     M  Matrix M.
-*  @param  size  Matrixdimension (NxN).
-*  @param value  Zu setzender Wert (optional)
+*  @param      M  Matrix M.
+*  @param   size  Matrixdimension (NxN).
+*  @param  value  Zu setzender Wert (optional)
 */
 inline void resetValuesMatrix(Matrix& M, size_t size, M_VAL_TYPE value = 0) {
 	for (size_t i = 0; i < size; ++i) {
@@ -67,7 +71,7 @@ inline void resetValuesMatrix(Matrix& M, size_t size, M_VAL_TYPE value = 0) {
 *  @param  matrixName  Name der Matrix (optional).
 */
 inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
-	std::cout << std::endl;
+	std::cout << "\n";
 	size_t mSize = M.size();
 	if (M.size() > 20) {
 #if DEBUG
@@ -75,18 +79,18 @@ inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
 		if (matrixName != NULL) {
 			std::cout << matrixName;
 		}
-		std::cout << " are bigger than 20x20!" << std::endl;
+		std::cout << " are bigger than 20x20!\n";
 #endif
 		return;
 	}
 	if (matrixName != NULL) {
-		std::cout << "Matrix " << matrixName << ':' << std::endl;
+		std::cout << "Matrix " << matrixName << ":\n";
 	}
 	for (size_t i = 0; i < mSize; ++i) {
 		for (size_t j = 0; j < mSize; ++j) {
 			std::cout << std::setw(STD_WIDTH) << std::setfill(' ') << std::setprecision(STD_PRECISION) << static_cast<M_VAL_TYPE>(M[i][j]);
 		}
-		std::cout << std::endl;
+		std::cout << "\n";
 	}
 }
 
@@ -103,7 +107,7 @@ inline int compareMatrices(Matrix& A, Matrix& B, size_t n) {
 	for (size_t i = 0; i < n; ++i) {
 		for (size_t j = 0; j < n; ++j) {
 			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
-				std::cout << A[i][j] << ":" << B[i][j] << std::endl;
+				std::cout << A[i][j] << ":" << B[i][j] << "\n";
 				return -1;
 			}
 		}
