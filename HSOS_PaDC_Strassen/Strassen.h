@@ -12,23 +12,29 @@
 #define STRASSEN_H_
 
 #include "Definitions.h"
+#include "Helper.h"
+#include "Matrix.h"
+#include <tbb/blocked_range2d.h>
+#include <tbb/parallel_for.h>
 #include <tbb/task.h>
+#include <vector>
 
 /**
 *  @brief  Repraesentiert eine Klasse, welche Matrixmultiplikationen
 *  mihilfe des Strassen-Algorithmusses loest.
 */
 class Strassen : public tbb::task {
+	Matrix& C;
 	Matrix& A;
 	Matrix& B;
-	Matrix& C;
 	size_t n;
 
 public:
-	Strassen(Matrix& __A, Matrix& __B, Matrix& __C,size_t __n);
+	Strassen(Matrix& __C, Matrix& __A, Matrix& __B, size_t __n) : C(__C), A(__A), B(__B), n(__n) {}
+
 	tbb::task* execute();
 };
 
-void strassenRecursive(Matrix& A, Matrix& B, Matrix& C, size_t n);
+void strassenRecursive(Matrix& C, Matrix& A, Matrix& B, size_t n);
 
 #endif /* STRASSEN_H_ */
