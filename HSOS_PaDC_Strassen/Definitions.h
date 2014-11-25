@@ -23,9 +23,8 @@ typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 #define THRESHOLD 0.001					// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
 
 #define USE_SEQ_IN_STRASSEN 1			// Schleifen im Non-Task-Algorithmus sequentiell ausfuehren?
-#define USE_SEQ_IN_STRASSEN_TASKS 1		// Schleifen im Task-Algorithmus sequentiell ausfuehren?
 
-#define POW 3							// 2^POW
+#define POW 9							// 2^POW
 #define SIZE (2 << POW)					// 4 - Dimension der Matrix (SIZE x SIZE)
 #define CUT_OFF (2 << (POW >> 1))		// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4!
 //#define SIZE 2 << 9					// 1024
@@ -35,7 +34,7 @@ typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 //#define SIZE 32769					// 2^15
 //#define SIZE 262145					// 2^18
 
-#define NO_THREADS 4					// Anzahl zu nutzender Threads (Falls aktiviert)
+#define NO_THREADS 2					// Anzahl zu nutzender Threads (Falls aktiviert)
 #define USE_SPECIFIC_THREAD_COUNT 0		// Soll spezifische Thread-Anzahl genutzt werden?
 
 #endif /* DEFINITIONS_H_ */
