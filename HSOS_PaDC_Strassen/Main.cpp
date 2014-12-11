@@ -26,6 +26,7 @@ using namespace tbb;
 *  @brief  Main-Methode zum Ausfuehren der verschiedenen Algorithmen.
 */
 int main(/*int argc, char* argv[]*/) {
+	std::cout << sysconf(_SC_LEVEL1_DCACHE_SIZE) / 1024 << "\n\n";
 	//Log::ReportingLevel() = logDEBUG4;
 	if (!isPowerOfTwo(SIZE)) {
 		std::cout << "Value of SIZE is not power of two\n";
@@ -39,10 +40,10 @@ int main(/*int argc, char* argv[]*/) {
 #endif
 
 	tick_count t0, t1;
-	Matrix A(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE, 0)));
-	Matrix B(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE, 0)));
-	Matrix C1(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE, 0)));
-	Matrix C2(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE, 0)));
+	Matrix A(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
+	Matrix B(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
+	Matrix C1(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
+	Matrix C2(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
 
 	initRandomizer();
 	initializeRandpriomMatrix(A, SIZE);
@@ -61,13 +62,13 @@ int main(/*int argc, char* argv[]*/) {
 //	//LOG(logINFO) << "SMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv";
 
 	// Naiv-Parallel
-	resetValuesMatrix(C2, SIZE);
-	t0 = tick_count::now();
-	parallel_for(blocked_range2d<size_t>(0, SIZE, 0, SIZE), MatrixMultPBody(C2, A, B, 0, SIZE));
-	t1 = tick_count::now();
-	printMatrix(C2, "C2 = A * B");
-	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
-	//LOG(logINFO) << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel";
+//	resetValuesMatrix(C2, SIZE);
+//	t0 = tick_count::now();
+//	parallel_for(blocked_range2d<size_t>(0, SIZE, 0, SIZE), MatrixMultPBody(C2, A, B, 0, SIZE));
+//	t1 = tick_count::now();
+//	printMatrix(C2, "C2 = A * B");
+//	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
+//	//LOG(logINFO) << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel";
 
 	// Strassen-Algorithmus: Non-Tasks
 	resetValuesMatrix(C1, SIZE);
