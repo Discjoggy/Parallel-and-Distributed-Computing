@@ -16,25 +16,21 @@
 typedef int M_VAL_TYPE;
 typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 
-#define DEBUG 1							// Debuggen? (z.B. Verwendung von Consolen-Ausgaben)
-#define MAX_RAND_VAL RAND_MAX / 50		// Zufallszahlen bis (21474836472147483647 / X) z.B. 50 oder 750
-#define STD_WIDTH 9						// Matrixausgabe: Indexbreite
-#define STD_PRECISION 5					// Matrixausgabe: Genauigkeit bei Gleitkommawerten
-#define THRESHOLD 0.001					// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
+#define NO_BITWISE 1
 
-#define USE_SEQ_IN_STRASSEN 1			// Schleifen im Non-Task-Algorithmus sequentiell ausfuehren?
+#define DEBUG 1									// Debuggen? (Z. B. Verwendung von Consolen-Ausgaben)
+#define MAX_RAND_VAL RAND_MAX / 50				// Zufallszahlen bis (21474836472147483647 / X) z.B. 50 oder 750
+#define STD_WIDTH 9								// Matrixausgabe: Indexbreite
+#define STD_PRECISION 5							// Matrixausgabe: Genauigkeit bei Gleitkommawerten
+#define THRESHOLD 0.001							// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
 
-#define POW 9							// 2^POW
-#define SIZE (2 << POW)					// 4 - Dimension der Matrix (SIZE x SIZE)
-#define CUT_OFF (2 << (POW >> 1))		// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4!
-//#define SIZE 2 << 9					// 1024
-//#define SIZE 1024						// 2^10
-//#define SIZE 2048						// 2^11
-//#define SIZE 4097						// 2^12
-//#define SIZE 32769					// 2^15
-//#define SIZE 262145					// 2^18
+#define USE_SEQ_IN_STRASSEN 1					// Schleifen im Non-Task-Algorithmus sequentiell ausfuehren?
 
-#define NO_THREADS 2					// Anzahl zu nutzender Threads (Falls aktiviert)
-#define USE_SPECIFIC_THREAD_COUNT 0		// Soll spezifische Thread-Anzahl genutzt werden?
+#define POW 10									// 2^POW
+const unsigned SIZE 	= (2 << POW);			// 4 - Dimension der Matrix (SIZE x SIZE)
+const unsigned CUT_OFF 	= (2 << (POW >> 1));	// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4!
 
-#endif /* DEFINITIONS_H_ */
+#define NO_THREADS 2							// Anzahl zu nutzender Threads (Falls aktiviert)
+#define USE_SPECIFIC_THREAD_COUNT 0				// Soll spezifische Thread-Anzahl genutzt werden?
+
+#endif
