@@ -25,16 +25,16 @@
 */
 class Strassen : public tbb::task {
 	Matrix& C;
-	Matrix& A;
-	Matrix& B;
-	size_t n;
+	const Matrix& A;
+	const Matrix& B;
+	const size_t& n;
 
 public:
-	Strassen(Matrix& __C, Matrix& __A, Matrix& __B, size_t __n) : C(__C), A(__A), B(__B), n(__n) {}
+	Strassen(Matrix& __C, const Matrix& __A, const Matrix& __B, const size_t& __n) : C(__C), A(__A), B(__B), n(__n) { }
 
 	tbb::task* execute();
 };
 
-void strassenRecursive(Matrix& C, Matrix& A, Matrix& B, size_t n);
+void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const size_t& n);
 
-#endif /* STRASSEN_H_ */
+#endif
