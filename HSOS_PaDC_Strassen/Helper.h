@@ -19,7 +19,7 @@
 #include <time.h>
 #include <math.h>			// fabs
 
-inline int isPowerOfTwo(size_t x) {
+static inline int isPowerOfTwo(const size_t& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
@@ -37,7 +37,7 @@ inline void initRandomizer() {
 *  @param     M  Matrix M.
 *  @param  size  Matrixdimension (NxN).
 */
-inline void initializeRandpriomMatrix(Matrix& M, size_t size) {
+inline void initializeRandpriomMatrix(Matrix& M, const size_t& size) {
 	for (size_t i = 0; i < size; ++i) {
 		for (size_t j = 0; j < size; ++j) {
 #if DEBUG
@@ -55,7 +55,7 @@ inline void initializeRandpriomMatrix(Matrix& M, size_t size) {
 *  @param   size  Matrixdimension (NxN).
 *  @param  value  Zu setzender Wert (optional)
 */
-inline void resetValuesMatrix(Matrix& M, size_t size, M_VAL_TYPE value = 0) {
+inline void resetValuesMatrix(Matrix& M, const size_t& size, const M_VAL_TYPE& value = 0) {
 	for (size_t i = 0; i < size; ++i) {
 		for (size_t j = 0; j < size; ++j) {
 			M[i][j] = value;
@@ -70,7 +70,7 @@ inline void resetValuesMatrix(Matrix& M, size_t size, M_VAL_TYPE value = 0) {
 *  @param           M  Matrix M.
 *  @param  matrixName  Name der Matrix (optional).
 */
-inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
+inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
 	std::cout << "\n";
 	size_t mSize = M.size();
 	if (M.size() > 20) {
@@ -103,7 +103,7 @@ inline void printMatrix(Matrix& M, const char* matrixName = NULL) {
 *  @param  n  Matrixdimension (NxN).
 *  @return 0 falls beide Matrizen gleich sind, andernfalls < 0
 */
-inline int compareMatrices(Matrix& A, Matrix& B, size_t n) {
+inline int compareMatrices(const Matrix& A, const Matrix& B, const size_t& n) {
 	for (size_t i = 0; i < n; ++i) {
 		for (size_t j = 0; j < n; ++j) {
 			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
@@ -115,4 +115,4 @@ inline int compareMatrices(Matrix& A, Matrix& B, size_t n) {
 	return 0;
 }
 
-#endif /* SRC_HELPER_H_ */
+#endif
