@@ -19,7 +19,7 @@
 #include <time.h>
 #include <math.h>			// fabs
 
-static inline int isPowerOfTwo(const size_t& x) {
+static inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
@@ -37,9 +37,9 @@ inline void initRandomizer() {
 *  @param     M  Matrix M.
 *  @param  size  Matrixdimension (NxN).
 */
-inline void initializeRandpriomMatrix(Matrix& M, const size_t& size) {
-	for (size_t i = 0; i < size; ++i) {
-		for (size_t j = 0; j < size; ++j) {
+inline void initializeRandpriomMatrix(Matrix& M, const M_SIZE_TYPE& size) {
+	for (M_SIZE_TYPE i = 0; i < size; ++i) {
+		for (M_SIZE_TYPE j = 0; j < size; ++j) {
 #if DEBUG
 			M[i][j] = 2;
 #else
@@ -53,11 +53,11 @@ inline void initializeRandpriomMatrix(Matrix& M, const size_t& size) {
 *  @brief  Setzt alle Werte einer Matrix auf den uebergebenen Wert.
 *  @param      M  Matrix M.
 *  @param   size  Matrixdimension (NxN).
-*  @param  value  Zu setzender Wert (optional)
+*  @param  value  Zu setzender Wert (optional).
 */
-inline void resetValuesMatrix(Matrix& M, const size_t& size, const M_VAL_TYPE& value = 0) {
-	for (size_t i = 0; i < size; ++i) {
-		for (size_t j = 0; j < size; ++j) {
+inline void resetValuesMatrix(Matrix& M, const M_SIZE_TYPE& size, const M_VAL_TYPE& value = 0) {
+	for (M_SIZE_TYPE i = 0; i < size; ++i) {
+		for (M_SIZE_TYPE j = 0; j < size; ++j) {
 			M[i][j] = value;
 		}
 	}
@@ -72,7 +72,7 @@ inline void resetValuesMatrix(Matrix& M, const size_t& size, const M_VAL_TYPE& v
 */
 inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
 	std::cout << "\n";
-	size_t mSize = M.size();
+	M_SIZE_TYPE mSize = M.size();
 	if (M.size() > 20) {
 #if DEBUG
 		std::cout << "Dimension of matrix ";
@@ -86,8 +86,8 @@ inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
 	if (matrixName != NULL) {
 		std::cout << "Matrix " << matrixName << ":\n";
 	}
-	for (size_t i = 0; i < mSize; ++i) {
-		for (size_t j = 0; j < mSize; ++j) {
+	for (M_SIZE_TYPE i = 0; i < mSize; ++i) {
+		for (M_SIZE_TYPE j = 0; j < mSize; ++j) {
 			std::cout << std::setw(STD_WIDTH) << std::setfill(' ') << std::setprecision(STD_PRECISION) << static_cast<M_VAL_TYPE>(M[i][j]);
 		}
 		std::cout << "\n";
@@ -101,14 +101,14 @@ inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
 *  @param  A  Matrix A.
 *  @param  B  Matrix B.
 *  @param  n  Matrixdimension (NxN).
-*  @return 0 falls beide Matrizen gleich sind, andernfalls < 0
+*  @return 0 falls beide Matrizen gleich sind, andernfalls != 0.
 */
-inline int compareMatrices(const Matrix& A, const Matrix& B, const size_t& n) {
-	for (size_t i = 0; i < n; ++i) {
-		for (size_t j = 0; j < n; ++j) {
+inline int compareMatrices(const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+	for (M_SIZE_TYPE i = 0; i < n; ++i) {
+		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
 				std::cout << A[i][j] << ":" << B[i][j] << "\n";
-				return -1;
+				return 1;
 			}
 		}
 	}
