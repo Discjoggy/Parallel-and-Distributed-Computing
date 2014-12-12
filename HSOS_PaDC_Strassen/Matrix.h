@@ -22,9 +22,9 @@
  *  @param  B  Matrix B.
  *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const size_t& n) {
-	for (size_t i = 0; i < n; ++i) {
-		for (size_t j = 0; j < n; ++j) {
+inline void MatrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+	for (M_SIZE_TYPE i = 0; i < n; ++i) {
+		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 #if NO_BITWISE
 			C[i][j] = A[i][j] - B[i][j];
 #else
@@ -41,9 +41,9 @@ inline void MatrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const size
  *  @param  B  Matrix B.
  *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const size_t& n) {
-	for (size_t i = 0; i < n; ++i) {
-		for (size_t j = 0; j < n; ++j) {
+inline void MatrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+	for (M_SIZE_TYPE i = 0; i < n; ++i) {
+		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 #if NO_BITWISE
 			C[i][j] = A[i][j] + B[i][j];
 #else
@@ -55,44 +55,17 @@ inline void MatrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const size
 
 /**
  *  @brief  Multipliziert Matrix B mit Matrix A sequentiell.
- *  @param  C      Matrix C (Ergebnismatrix).
- *  @param  A      Matrix A.
- *  @param  B      Matrix B.
- *  @param  aFrom  Ab welcher Zeile.
- *  @param  aTo    Bis welche Zeile.
- *  @param  bFrom  Ab welcher Spalte.
- *  @param  bTo    Bis welche Spalte.
- *  @param  cFrom  Ab welcher Zeile (Partitioniertes multiplizieren).
- *  @param  cTo    Bis welche Zeile (Partitioniertes multiplizieren).
+ *  @param  C  Matrix C (Ergebnismatrix).
+ *  @param  A  Matrix A.
+ *  @param  B  Matrix B.
+ *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const size_t& aFrom, const size_t& aTo, const size_t& bFrom, const size_t& bTo, const size_t& cFrom, const size_t& cTo) {
-	for (size_t i = aFrom; i < aTo; ++i) {
-		for (size_t j = bFrom; j < bTo; ++j) {
-			for (size_t k = cFrom; k < cTo; ++k) {
+inline void MatrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+	for (M_SIZE_TYPE i = 0; i < n; ++i) {
+		for (M_SIZE_TYPE k = 0; k < n; ++k) {
+			for (M_SIZE_TYPE j = 0; j < n; ++j) {
 				C[i][j] += A[i][k] * B[k][j];
 			}
-		}
-	}
-}
-
-/**
- *  @brief  Addiert vier Teilmatrizen auf eine Matrix.
- *  @param  C    Matrix C (Ergebnismatrix).
- *  @param  C11  Matrix C11 Teilmatrix (1. Quadrant).
- *  @param  C12  Matrix C11 Teilmatrix (2. Quadrant).
- *  @param  C21  Matrix C11 Teilmatrix (3. Quadrant).
- *  @param  C22  Matrix C11 Teilmatrix (5. Quadrant).
- *  @param  n    Matrixdimension (NxN).
- */
-inline void MatrixIncreaseAndCopySeq(Matrix& C, const Matrix& C11, const Matrix& C12, const Matrix& C21, const Matrix& C22, const size_t& n) {
-	for (size_t i = 0; i < n; ++i) {
-		size_t iDif = i + n;
-		for (size_t j = 0; j < n; ++j) {
-			size_t jDif = j + n;
-			C[i][j] += C11[i][j];
-			C[i][jDif] += C12[i][j];
-			C[iDif][j] += C21[i][j];
-			C[iDif][jDif] += C22[i][j];
 		}
 	}
 }
@@ -117,9 +90,9 @@ struct MatrixPBody {
 struct MatrixSubPBody: public MatrixPBody {
 	MatrixSubPBody(Matrix& __C, const Matrix& __A, const Matrix& __B) : MatrixPBody(__C, __A, __B) { }
 
-	void operator()(const tbb::blocked_range2d<size_t>& range) const {
-		for (size_t i = range.rows().begin(); i != range.rows().end(); ++i) {
-			for (size_t j = range.cols().begin(); j != range.cols().end(); ++j) {
+	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
+		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
+			for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
 #if NO_BITWISE
 				C[i][j] = A[i][j] - B[i][j];
 #else
@@ -136,9 +109,9 @@ struct MatrixSubPBody: public MatrixPBody {
 struct MatrixAddPBody: public MatrixPBody {
 	MatrixAddPBody(Matrix& __C, const Matrix& __A, const Matrix& __B) : MatrixPBody(__C, __A, __B) { }
 
-	void operator()(const tbb::blocked_range2d<size_t>& range) const {
-		for (size_t i = range.rows().begin(); i != range.rows().end(); ++i) {
-			for (size_t j = range.cols().begin(); j != range.cols().end(); ++j) {
+	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
+		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
+			for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
 #if NO_BITWISE
 				C[i][j] = A[i][j] + B[i][j];
 #else
@@ -153,46 +126,19 @@ struct MatrixAddPBody: public MatrixPBody {
  *  @brief  Funktionsobjekt zum parallelisierten Multiplizieren.
  */
 struct MatrixMultPBody: public MatrixPBody {
-	const size_t& cFrom;
-	const size_t& cTo;
+	const M_SIZE_TYPE& n;
 
-	MatrixMultPBody(Matrix& __C, const Matrix& __A, const Matrix& __B, const size_t& __cFrom, const size_t& __cTo) :
-			MatrixPBody(__C, __A, __B), cFrom(__cFrom), cTo(__cTo) {
-	}
+	MatrixMultPBody(Matrix& __C, const Matrix& __A, const Matrix& __B, const M_SIZE_TYPE& __n) : MatrixPBody(__C, __A, __B), n(__n) { }
 
-	void operator()(const tbb::blocked_range2d<size_t>& range) const {
-		for (size_t i = range.rows().begin(); i != range.rows().end(); ++i) {
-			for (size_t j = range.cols().begin(); j != range.cols().end(); ++j) {
-				for (size_t k = cFrom; k < cTo; ++k) {	// Zeile X Spalte
+	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
+		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
+			for (M_SIZE_TYPE k = 0; k < n; ++k) {
+				for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
 					C[i][j] += A[i][k] * B[k][j];
 				}
 			}
 		}
 	}
 };
-
-inline void MatrixMult(Matrix& C, const Matrix& A, const Matrix& B, const size_t& aFrom, const size_t& aTo, const size_t& bFrom, const size_t& bTo, const size_t& cFrom, const size_t& cTo) {
-#if USE_SEQ_IN_STRASSEN
-	MatrixMultSeq(C, A, B, aFrom, aTo, bFrom, bTo, cFrom, cTo);
-#else
-	tbb::parallel_for(tbb::blocked_range2d<size_t>(0, cTo, 0, cTo), MatrixMultPBody(C, A, B, 0, cTo));
-#endif
-}
-
-inline void MatrixSub(Matrix& C, const Matrix& A, const Matrix& B, const size_t& n) {
-#if USE_SEQ_IN_STRASSEN
-	MatrixSubSeq(C, A, B, n);
-#else
-	tbb::parallel_for(tbb::blocked_range2d<size_t>(0, n, 0, n), MatrixSubPBody(C, A, B));
-#endif
-}
-
-inline void MatrixAdd(Matrix& C, const Matrix& A, const Matrix& B, const size_t& n) {
-#if USE_SEQ_IN_STRASSEN
-	MatrixAddSeq(C, A, B, n);
-#else
-	tbb::parallel_for(tbb::blocked_range2d<size_t>(0, n, 0, n), MatrixAddPBody(C, A, B));
-#endif
-}
 
 #endif
