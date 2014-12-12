@@ -29,7 +29,7 @@ typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 #define USE_SPECIFIC_THREAD_COUNT 0					// Soll spezifische Thread-Anzahl genutzt werden?
 
 #define POW 9										// 2^POW
-const M_SIZE_TYPE SIZE 		= (2 << POW);			// Dimension der Matrix (SIZE x SIZE)
+const M_SIZE_TYPE M_SIZE 		= (2 << POW);			// Dimension der Matrix (SIZE x SIZE)
 const M_SIZE_TYPE CUT_OFF 	= (2 << (POW >> 1));	// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4!
 
 #endif
