@@ -14,7 +14,7 @@
 #include <vector>
 #include <stdint.h>
 
-typedef uint_least16_t M_SIZE_TYPE;					// Groessentyp der Matrizen, Schleifenzaehler usw.
+typedef uint_fast32_t M_SIZE_TYPE;					// Groessentyp der Matrizen, Schleifenzaehler usw.
 typedef double M_VAL_TYPE;							// Typ der Werte in den Matrizen (Gut: int_least32_t)
 typedef std::vector< std::vector<M_VAL_TYPE> > Matrix;
 
