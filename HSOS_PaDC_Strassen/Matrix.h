@@ -22,7 +22,7 @@
  *  @param  B  Matrix B.
  *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+inline void matrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 #if NO_BITWISE
@@ -41,7 +41,7 @@ inline void MatrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
  *  @param  B  Matrix B.
  *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+inline void matrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 #if NO_BITWISE
@@ -60,7 +60,7 @@ inline void MatrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
  *  @param  B  Matrix B.
  *  @param  n  Matrixdimension (NxN).
  */
-inline void MatrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+inline void matrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE k = 0; k < n; ++k) {
 			for (M_SIZE_TYPE j = 0; j < n; ++j) {
