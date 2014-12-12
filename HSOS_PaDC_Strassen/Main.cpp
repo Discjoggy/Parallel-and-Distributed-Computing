@@ -19,16 +19,14 @@
 #include <tbb/tick_count.h>
 #include <vector>
 
-#include <tbb/cache_aligned_allocator.h>
-
 using namespace tbb;
 
 /**
 *  @brief  Main-Methode zum Ausfuehren der verschiedenen Algorithmen.
 */
 int main(/*int argc, char* argv[]*/) {
-	if (!isPowerOfTwo(SIZE)) {
-		std::cout << "Value of SIZE is not power of two\n";
+	if (!isPowerOfTwo(M_SIZE)) {
+		std::cout << "Value of M_SIZE is not power of two\n";
 		return 1;
 	}
 
@@ -38,51 +36,51 @@ int main(/*int argc, char* argv[]*/) {
 #endif
 
 	tick_count t0, t1;
-	Matrix A(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
-	Matrix B(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
-	Matrix C1(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
-	Matrix C2(std::vector<std::vector<M_VAL_TYPE> >(SIZE, std::vector<M_VAL_TYPE>(SIZE)));
+	Matrix A(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
+	Matrix B(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
+	Matrix C1(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
+	Matrix C2(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
 
 	initRandomizer();
-	initializeRandpriomMatrix(A, SIZE);
-	initializeRandpriomMatrix(B, SIZE);
+	initializeRandpriomMatrix(A, M_SIZE);
+	initializeRandpriomMatrix(B, M_SIZE);
 
 	printMatrix(A, "A");
 	printMatrix(B, "B");
 
 //	// Naiv
-//	resetValuesMatrix(C2, SIZE);
+//	resetValuesMatrix(C2, M_SIZE);
 //	t0 = tick_count::now();
-//	MatrixMultSeq(A, B, C2, SIZE);
+//	MatrixMultSeq(A, B, C2, M_SIZE);
 //	t1 = tick_count::now();
 //	printMatrix(C2, "C2 = A * B");
 //	std::cout << "SMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv\n";
-//
-//	// Naiv-Parallel
-//	resetValuesMatrix(C2, SIZE);
-//	t0 = tick_count::now();
-//	parallel_for(blocked_range2d<M_SIZE_TYPE>(0, SIZE, 0, SIZE), MatrixMultPBody(C2, A, B, SIZE));
-//	t1 = tick_count::now();
-//	printMatrix(C2, "C2 = A * B");
-//	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
+
+	// Naiv-Parallel
+	resetValuesMatrix(C2, M_SIZE);
+	t0 = tick_count::now();
+	parallel_for(blocked_range2d<M_SIZE_TYPE>(0, M_SIZE, 0, M_SIZE), MatrixMultPBody(C2, A, B, M_SIZE));
+	t1 = tick_count::now();
+	printMatrix(C2, "C2 = A * B");
+	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
 
 	// Strassen-Algorithmus: Non-Tasks
-	resetValuesMatrix(C1, SIZE);
+	resetValuesMatrix(C1, M_SIZE);
 	t0 = tick_count::now();
-	strassenRecursive(C1, A, B, SIZE);
+	strassenRecursive(C1, A, B, M_SIZE);
 	t1 = tick_count::now();
 	printMatrix(C1, "C1 = A * B");
 	std::cout << "RSMULT: Time was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Non-Tasks\n";
-	compareMatrices(C1, C2, SIZE) ? std::cout << "RSMULT: Matrizen ungleich\n" : std::cout << "RSMULT: OK\n";
+	compareMatrices(C1, C2, M_SIZE) ? std::cout << "RSMULT: Matrizen ungleich\n" : std::cout << "RSMULT: OK\n";
 
 	// Strassen-Algorithmus: Tasks
-	resetValuesMatrix(C1, SIZE);
+	resetValuesMatrix(C1, M_SIZE);
 	t0 = tick_count::now();
-	task::spawn_root_and_wait(*new (task::allocate_root()) Strassen(C1, A, B, SIZE));
+	task::spawn_root_and_wait(*new (task::allocate_root()) Strassen(C1, A, B, M_SIZE));
 	t1 = tick_count::now();
 	printMatrix(C1, "C1 = A * B");
 	std::cout << "PSMULT: Time was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Tasks\n";
-	compareMatrices(C1, C2, SIZE) ? std::cout << "PSMULT: Matrizen ungleich\n" : std::cout << "PSMULT: OK\n";
+	compareMatrices(C1, C2, M_SIZE) ? std::cout << "PSMULT: Matrizen ungleich\n" : std::cout << "PSMULT: OK\n";
 
 	std::cout << "\n\nEND\n" ;
 	return 0;
