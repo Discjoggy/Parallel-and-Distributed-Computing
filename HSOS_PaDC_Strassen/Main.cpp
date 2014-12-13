@@ -36,10 +36,10 @@ int main(/*int argc, char* argv[]*/) {
 #endif
 
 	tick_count t0, t1;
-	Matrix A(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
-	Matrix B(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
-	Matrix C1(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
-	Matrix C2(std::vector<std::vector<M_VAL_TYPE> >(M_SIZE, std::vector<M_VAL_TYPE>(M_SIZE)));
+	Matrix A(M_SIZE, InnerArray(M_SIZE));
+	Matrix B(M_SIZE, InnerArray(M_SIZE));
+	Matrix C1(M_SIZE, InnerArray(M_SIZE));
+	Matrix C2(M_SIZE, InnerArray(M_SIZE));
 
 	initRandomizer();
 	initializeRandpriomMatrix(A, M_SIZE);
@@ -48,21 +48,21 @@ int main(/*int argc, char* argv[]*/) {
 	printMatrix(A, "A");
 	printMatrix(B, "B");
 
-//	// Naiv
+	// Naiv
 //	resetValuesMatrix(C2, M_SIZE);
 //	t0 = tick_count::now();
-//	MatrixMultSeq(A, B, C2, M_SIZE);
+//	matrixMultSeq(C2, A, B, M_SIZE);
 //	t1 = tick_count::now();
 //	printMatrix(C2, "C2 = A * B");
 //	std::cout << "SMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv\n";
 
 	// Naiv-Parallel
-	resetValuesMatrix(C2, M_SIZE);
-	t0 = tick_count::now();
-	parallel_for(blocked_range2d<M_SIZE_TYPE>(0, M_SIZE, 0, M_SIZE), MatrixMultPBody(C2, A, B, M_SIZE));
-	t1 = tick_count::now();
-	printMatrix(C2, "C2 = A * B");
-	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
+//	resetValuesMatrix(C2, M_SIZE);
+//	t0 = tick_count::now();
+//	parallel_for(blocked_range2d<M_SIZE_TYPE>(0, M_SIZE, 0, M_SIZE), MatrixMultPBody(C2, A, B, M_SIZE));
+//	t1 = tick_count::now();
+//	printMatrix(C2, "C2 = A * B");
+//	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
 
 	// Strassen-Algorithmus: Non-Tasks
 	resetValuesMatrix(C1, M_SIZE);
