@@ -17,7 +17,7 @@
 typedef uint_fast32_t M_SIZE_TYPE;					// Groessentyp der Matrizen, Schleifenzaehler usw.
 typedef double M_VAL_TYPE;							// Typ der Werte in den Matrizen (Gut: int_least32_t)
 
-#define ALL_TYPE 'S'
+#define ALL_TYPE 'S'								// Allocator-Typ
 #if ALL_TYPE == 'S'
 #include <tbb/scalable_allocator.h>
 typedef std::vector<M_VAL_TYPE, tbb::scalable_allocator<M_VAL_TYPE>> InnerArray;
