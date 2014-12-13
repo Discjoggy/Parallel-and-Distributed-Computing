@@ -107,7 +107,7 @@ inline int compareMatrices(const Matrix& A, const Matrix& B, const M_SIZE_TYPE& 
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
 			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
-				std::cout << A[i][j] << ":" << B[i][j] << "\n";
+				std::cout << "A[" << i << "][" << j << "](" << A[i][j] << ") != B[" << i << "][" << j << "](" << B[i][j] << ") ";
 				return 1;
 			}
 		}
