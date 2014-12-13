@@ -13,12 +13,23 @@
 
 #include <vector>
 #include <stdint.h>
-#include <tbb/scalable_allocator.h>
 
 typedef uint_fast32_t M_SIZE_TYPE;					// Groessentyp der Matrizen, Schleifenzaehler usw.
 typedef double M_VAL_TYPE;							// Typ der Werte in den Matrizen (Gut: int_least32_t)
+
+#define ALL_TYPE 'S'
+#if ALL_TYPE == 'S'
+#include <tbb/scalable_allocator.h>
 typedef std::vector<M_VAL_TYPE, tbb::scalable_allocator<M_VAL_TYPE>> InnerArray;
 typedef std::vector<InnerArray, tbb::scalable_allocator<InnerArray>> Matrix;
+#elif ALL_TYPE == 'C'
+#include <tbb/cache_aligned_allocator.h>
+typedef std::vector<M_VAL_TYPE, tbb::cache_aligned_allocator<M_VAL_TYPE>> InnerArray;
+typedef std::vector<InnerArray, tbb::cache_aligned_allocator<InnerArray>> Matrix;
+#else
+typedef std::vector<M_VAL_TYPE> InnerArray;
+typedef std::vector<InnerArray> Matrix;
+#endif
 
 #define DEBUG 0										// Debuggen? (Z. B. Verwendung von Consolen-Ausgaben, Konstanten Werten usw.)
 #define MAX_RAND_VAL RAND_MAX / 50					// Zufallszahlen bis (21474836472147483647 / X) z.B. 50 oder 750
