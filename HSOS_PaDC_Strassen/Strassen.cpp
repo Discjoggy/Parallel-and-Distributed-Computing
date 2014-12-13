@@ -41,6 +41,7 @@ tbb::task* Strassen::execute() {
 				A12[i][j] = A[i][jPlusNewN];
 				A21[i][j] = A[iPlusNewN][j];
 				A22[i][j] = A[iPlusNewN][jPlusNewN];
+
 				B11[i][j] = B[i][j];
 				B12[i][j] = B[i][jPlusNewN];
 				B21[i][j] = B[iPlusNewN][j];
