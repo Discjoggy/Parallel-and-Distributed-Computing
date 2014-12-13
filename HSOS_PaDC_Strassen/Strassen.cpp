@@ -23,15 +23,15 @@ tbb::task* Strassen::execute() {
 	else {
 		const M_SIZE_TYPE newN = n >> 1;
 		// Devide & Conquer
-		Matrix A11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix A11(newN, InnerArray(newN));
+		Matrix A12(newN, InnerArray(newN));
+		Matrix A21(newN, InnerArray(newN));
+		Matrix A22(newN, InnerArray(newN));
 
-		Matrix B11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix B11(newN, InnerArray(newN));
+		Matrix B12(newN, InnerArray(newN));
+		Matrix B21(newN, InnerArray(newN));
+		Matrix B22(newN, InnerArray(newN));
 
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
@@ -50,26 +50,26 @@ tbb::task* Strassen::execute() {
 
 
 		// M2 = (A21 + A22) * B11
-		Matrix M2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix tmp1M2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M2(newN, InnerArray(newN));
+		Matrix tmp1M2(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M2, A21, A22, newN);
 		spawn(*new (allocate_child()) Strassen(M2, tmp1M2, B11, newN));
 
 		// M3 = A11 * (B12 - B22)
-		Matrix M3(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix tmp1M3(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M3(newN, InnerArray(newN));
+		Matrix tmp1M3(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M3, B12, B22, newN);
 		spawn(*new (allocate_child()) Strassen(M3, A11, tmp1M3, newN));
 
 		// M4 = A22 * (B21 - B11)
-		Matrix M4(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix tmp1M4(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M4(newN, InnerArray(newN));
+		Matrix tmp1M4(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M4, B21, B11, newN);
 		spawn(*new (allocate_child()) Strassen(M4, A22, tmp1M4, newN));
 
 		// M5 = (A11 + A12) * B22128
-		Matrix M5(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix tmp1M5(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M5(newN, InnerArray(newN));
+		Matrix tmp1M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M5, A11, A12, newN);
 		set_ref_count(5);
 		spawn_and_wait_for_all(*new (allocate_child()) Strassen(M5, tmp1M5, B22, newN));
@@ -77,10 +77,10 @@ tbb::task* Strassen::execute() {
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
-				C[i][j] = M4[i][j] - M5[i][j];
-				C[i][jPlusNewN] = M3[i][j] + M5[i][j];
-				C[iPlusNewN][j] = M2[i][j] + M4[i][j];
+				M_SIZE_TYPE jPlusNewN 	= j + newN;
+				C[i][j] 				= M4[i][j] - M5[i][j];
+				C[i][jPlusNewN] 		= M3[i][j] + M5[i][j];
+				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
 				C[iPlusNewN][jPlusNewN] = M3[i][j] - M2[i][j];
 			}
 		}
@@ -101,14 +101,14 @@ tbb::task* Strassen::execute() {
 
 		// M6 = (A21 - A11) * (B11 + B12)
 		// Reuse: M6 = M3 | tmp1M6 = tmp1M3 | tmp2M6 = tmp2M3
-		Matrix tmp2M3(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix tmp2M3(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M3, A21, A11, newN);
 		matrixAddSeq(tmp2M3, B11, B12, newN);
 		spawn(*new (allocate_child()) Strassen(M3, tmp1M3, tmp2M3, newN));
 
 		// M7 = (A12 - A22) * (B21 + B22)
 		// Reuse: M7 = M4 | tmp1M7 = tmp1M5 | tmp2M7 = tmp2M4
-		Matrix tmp2M4(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix tmp2M4(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M4, A12, A22, newN);
 		matrixAddSeq(tmp2M4, B21, B22, newN);
 		set_ref_count(4);
@@ -117,9 +117,8 @@ tbb::task* Strassen::execute() {
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
 				C[i][j] 				+= M2[i][j] + M4[i][j];
-				C[iPlusNewN][jPlusNewN] += M2[i][j] + M3[i][j];
+				C[iPlusNewN][j + newN] 	+= M2[i][j] + M3[i][j];
 			}
 		}
 
@@ -163,15 +162,15 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 	else {
 		const M_SIZE_TYPE newN = n >> 1;
 		// Devide & Conquer
-		Matrix A11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix A22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix A11(newN, InnerArray(newN));
+		Matrix A12(newN, InnerArray(newN));
+		Matrix A21(newN, InnerArray(newN));
+		Matrix A22(newN, InnerArray(newN));
 
-		Matrix B11(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B12(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B21(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix B22(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix B11(newN, InnerArray(newN));
+		Matrix B12(newN, InnerArray(newN));
+		Matrix B21(newN, InnerArray(newN));
+		Matrix B22(newN, InnerArray(newN));
 
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
@@ -191,23 +190,23 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 
 
 		// M2 = (A21 + A22) * B11
-		Matrix tmp1(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
-		Matrix M2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix tmp1(newN, InnerArray(newN));
+		Matrix M2(newN, InnerArray(newN));
 		matrixAddSeq(tmp1, A21, A22, newN);
 		strassenRecursive(M2, tmp1, B11, newN);
 
 		// M3 = A11 * (B12 - B22)
-		Matrix M3(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M3(newN, InnerArray(newN));
 		matrixSubSeq(tmp1, B12, B22, newN);
 		strassenRecursive(M3, A11, tmp1, newN);
 
 		// M4 = A22 * (B21 - B11)
-		Matrix M4(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M4(newN, InnerArray(newN));
 		matrixSubSeq(tmp1, B21, B11, newN);
 		strassenRecursive(M4, A22, tmp1, newN);
 
 		// M5 = (A11 + A12) * B22128
-		Matrix M5(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1, A11, A12, newN);
 		strassenRecursive(M5, tmp1, B22, newN);
 
@@ -215,9 +214,9 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
 				M_SIZE_TYPE jPlusNewN = j + newN;
-				C[i][j] = M4[i][j] - M5[i][j];
-				C[i][jPlusNewN] = M3[i][j] + M5[i][j];
-				C[iPlusNewN][j] = M2[i][j] + M4[i][j];
+				C[i][j] 				= M4[i][j] - M5[i][j];
+				C[i][jPlusNewN] 		= M3[i][j] + M5[i][j];
+				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
 				C[iPlusNewN][jPlusNewN] = M3[i][j] - M2[i][j];
 			}
 		}
@@ -231,7 +230,7 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 
 
 		// M1 = (A11 + A22) * (B11 + B22)
-		Matrix tmp2(std::vector< std::vector<M_VAL_TYPE> >(newN, std::vector<M_VAL_TYPE>(newN)));
+		Matrix tmp2(newN, InnerArray(newN));
 		matrixAddSeq(tmp1, A11, A22, newN);
 		matrixAddSeq(tmp2, B11, B22, newN);
 		strassenRecursive(M2, tmp1, tmp2, newN);
@@ -249,9 +248,8 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
 				C[i][j] 				+= M2[i][j] + M4[i][j];
-				C[iPlusNewN][jPlusNewN] += M2[i][j] + M3[i][j];
+				C[iPlusNewN][j + newN] 	+= M2[i][j] + M3[i][j];
 			}
 		}
 
