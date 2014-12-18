@@ -20,7 +20,6 @@
 #include <math.h>			// fabs
 #include <string.h>
 
-
 inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
