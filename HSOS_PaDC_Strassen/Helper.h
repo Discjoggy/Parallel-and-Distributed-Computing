@@ -18,9 +18,83 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>			// fabs
+#include <string.h>
 
-static inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
+
+inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
+}
+
+inline int show_usage(const char* name) {
+    std::cerr << "Usage: " << name << " -<option> <value>\n"
+			  << "Options:\n"
+			  << "\t-h\tShow this help message\n"
+			  << "\t-n\tDimension of the matrices (n X n)\n"
+			  << "\t-c\tCut-Off\n"
+	  	  	  << "\t-t\tNumber of threads\n";
+    return 1;
+}
+
+inline int init_arguments(const int argc, char* argv[]) {
+	if (argc > 0) {
+		if ((argc -1) % 2 != 0) {
+			return show_usage(argv[0]);
+		}
+		for (int i = 1; i < argc; i++) {
+			if (i % 2 != 0) {
+				if (strlen(argv[i]) != 2) {
+					return show_usage(argv[0]);
+				}
+				const char *options = "hnct";
+				int tmp;
+				switch (strchr(options, argv[i][1])[0]) {
+				case 'h':
+					return show_usage(argv[0]);
+				case 'n':
+					if (i + 1 >= argc) {
+						return show_usage(argv[0]);
+					}
+					tmp = atoi(argv[i + 1]);
+					if (tmp <= 0) {
+						return show_usage(argv[0]);
+					}
+					if (!isPowerOfTwo(tmp)) {
+						std::cerr << "Matrix dimension n has to be a value of power of two\n";
+						return 1;
+					}
+					M_SIZE = tmp;
+					break;
+				case 'c':
+					if (i + 1 >= argc) {
+						return show_usage(argv[0]);
+					}
+					tmp = atoi(argv[i + 1]);
+					if (tmp <= 0) {
+						return show_usage(argv[0]);
+					}
+					if (!isPowerOfTwo(tmp)) {
+						std::cerr << "Cut-Off c has to be a value of power of two\n";
+						return 1;
+					}
+					CUT_OFF = tmp;
+					break;
+				case 't':
+					if (i + 1 >= argc) {
+						return show_usage(argv[0]);
+					}
+					if (atoi(argv[i + 1]) <= 0) {
+						return show_usage(argv[0]);
+					}
+					NO_THREADS = atoi(argv[i + 1]);
+					break;
+				default:
+					return show_usage(argv[0]);
+				}
+			}
+		}
+
+	}
+	return 0;
 }
 
 /**
