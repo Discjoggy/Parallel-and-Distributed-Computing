@@ -12,21 +12,20 @@
 #define DEFINITIONS_H_
 
 #include <vector>
-#include <valarray>
 #include <stdint.h>
 
 typedef uint_fast32_t M_SIZE_TYPE;					// Groessentyp der Matrizen, Schleifenzaehler usw.
-typedef double M_VAL_TYPE;							// Typ der Werte in den Matrizen (Gut: int_least32_t)
+typedef int_least32_t M_VAL_TYPE;					// Typ der Werte in den Matrizen (Gut: int_least32_t)
 
 #define ALL_TYPE 'S'								// Allocator-Typ
 #if ALL_TYPE == 'S'
 #include <tbb/scalable_allocator.h>
-typedef std::vector<M_VAL_TYPE, tbb::scalable_allocator<M_VAL_TYPE>> InnerArray;
-typedef std::vector<InnerArray, tbb::scalable_allocator<InnerArray>> Matrix;
+typedef std::vector<M_VAL_TYPE, tbb::scalable_allocator<M_VAL_TYPE> > InnerArray;
+typedef std::vector<InnerArray, tbb::scalable_allocator<InnerArray> > Matrix;
 #elif ALL_TYPE == 'C'
 #include <tbb/cache_aligned_allocator.h>
-typedef std::vector<M_VAL_TYPE, tbb::cache_aligned_allocator<M_VAL_TYPE>> InnerArray;
-typedef std::vector<InnerArray, tbb::cache_aligned_allocator<InnerArray>> Matrix;
+typedef std::vector<M_VAL_TYPE, tbb::cache_aligned_allocator<M_VAL_TYPE> > InnerArray;
+typedef std::vector<InnerArray, tbb::cache_aligned_allocator<InnerArray> > Matrix;
 #else
 typedef std::vector<M_VAL_TYPE> InnerArray;
 typedef std::vector<InnerArray> Matrix;
@@ -44,9 +43,9 @@ static int RUN_NAIV_PAR 		= 0;				// Naiven Algorithmus parallel ausfuehren
 static int RUN_STRASSEN_SEQ 	= 1;				// Strassen-Algorithmus sequentiell ausfuehren
 static int RUN_STRASSEN_PAR 	= 1;				// Strassen-Algorithmus parallel ausfuehren
 
-#define POW 3										// 2^POW
-static M_SIZE_TYPE M_SIZE	= (2 << POW);			// Dimension der Matrix (SIZE x SIZE)
-static M_SIZE_TYPE CUT_OFF 	= 64;					// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4! //(2 << (POW >> 1));
-static unsigned NO_THREADS	= 0;					// Anzahl zu nutzender Threads
+#define POW 2										// 2^POW
+static M_SIZE_TYPE M_SIZE		= (2 << POW);		// Dimension der Matrix (SIZE x SIZE)
+static M_SIZE_TYPE CUT_OFF 		= 64;				// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4! //(2 << (POW >> 1));
+static unsigned NO_THREADS		= 0;				// Anzahl zu nutzender Threads
 
 #endif
