@@ -24,16 +24,16 @@ using namespace tbb;
 /**
 *  @brief  Main-Methode zum Ausfuehren der verschiedenen Algorithmen.
 */
-int main(/*int argc, char* argv[]*/) {
-	if (!isPowerOfTwo(M_SIZE)) {
-		std::cout << "Value of M_SIZE is not power of two\n";
-		return 1;
+int main(int argc, char* argv[]) {
+	NO_THREADS = tbb::task_scheduler_init::default_num_threads();
+	const int result = init_arguments(argc, argv);
+	if (result != 0) {
+		return result;
 	}
-
-#if USE_SPECIFIC_THREAD_COUNT
 	tbb::task_scheduler_init init(NO_THREADS);
-	std::cout << "Using " << NO_THREADS << " thread(s)\n";
-#endif
+	std::cout << "Threads:\t" << NO_THREADS << "\n";
+	std::cout << "Dimension:\t" << M_SIZE << " x " << M_SIZE << "\n";
+	std::cout << "Cut-Off:\t" << CUT_OFF << "\n";
 
 	tick_count t0, t1;
 	Matrix A(M_SIZE, InnerArray(M_SIZE));
