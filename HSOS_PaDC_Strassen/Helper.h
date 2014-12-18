@@ -20,6 +20,8 @@
 #include <math.h>			// fabs
 #include <string.h>
 
+#include <stdlib.h>
+
 inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
@@ -30,6 +32,7 @@ inline int show_usage(const char* name) {
 			  << "\t-h\tShow this help message\n"
 			  << "\t-n\tDimension of the matrices (n X n)\n"
 			  << "\t-c\tCut-Off\n"
+			  << "\t-r\tRuns (e.g. 1111 for all)\n"
 	  	  	  << "\t-t\tNumber of threads\n";
     return 1;
 }
@@ -44,7 +47,10 @@ inline int init_arguments(const int argc, char* argv[]) {
 				if (strlen(argv[i]) != 2) {
 					return show_usage(argv[0]);
 				}
-				const char *options = "hnct";
+				const char *options = "hnctr";
+				if (strchr(options, argv[i][1]) == NULL) {
+					return show_usage(argv[0]);
+				}
 				int tmp;
 				switch (strchr(options, argv[i][1])[0]) {
 				case 'h':
@@ -76,6 +82,15 @@ inline int init_arguments(const int argc, char* argv[]) {
 						return 1;
 					}
 					CUT_OFF = tmp;
+					break;
+				case 'r':
+					if (i + 1 >= argc || strlen(argv[i + 1]) != 4) {
+						return show_usage(argv[0]);
+					}
+					RUN_NAIV_SEQ 		= argv[i + 1][0] - 48;
+					RUN_NAIV_PAR 		= argv[i + 1][1] - 48;
+					RUN_STRASSEN_SEQ 	= argv[i + 1][2] - 48;
+					RUN_STRASSEN_PAR 	= argv[i + 1][3] - 48;
 					break;
 				case 't':
 					if (i + 1 >= argc) {
