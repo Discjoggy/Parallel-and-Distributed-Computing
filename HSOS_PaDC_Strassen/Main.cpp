@@ -49,38 +49,50 @@ int main(int argc, char* argv[]) {
 	printMatrix(B, "B");
 
 	// Naiv
-//	resetValuesMatrix(C2, M_SIZE);
-//	t0 = tick_count::now();
-//	matrixMultSeq(C2, A, B, M_SIZE);
-//	t1 = tick_count::now();
-//	printMatrix(C2, "C2 = A * B");
-//	std::cout << "SMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv\n";
+	if (RUN_NAIV_SEQ != 0) {
+		resetValuesMatrix(C2, M_SIZE);
+		t0 = tick_count::now();
+		matrixMultSeq(C2, A, B, M_SIZE);
+		t1 = tick_count::now();
+		printMatrix(C2, "C2 = A * B");
+		std::cout << "Naiv Seq:\tTime was " << (t1 - t0).seconds() << "s - Naiv\n";
+	}
 
 	// Naiv-Parallel
-//	resetValuesMatrix(C2, M_SIZE);
-//	t0 = tick_count::now();
-//	parallel_for(blocked_range2d<M_SIZE_TYPE>(0, M_SIZE, 0, M_SIZE), MatrixMultPBody(C2, A, B, M_SIZE));
-//	t1 = tick_count::now();
-//	printMatrix(C2, "C2 = A * B");
-//	std::cout << "PMULT:  Time was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
+	if (RUN_NAIV_PAR != 0) {
+		resetValuesMatrix(C2, M_SIZE);
+		t0 = tick_count::now();
+		parallel_for(blocked_range2d<M_SIZE_TYPE>(0, M_SIZE, 0, M_SIZE), MatrixMultPBody(C2, A, B, M_SIZE));
+		t1 = tick_count::now();
+		printMatrix(C2, "C2 = A * B");
+		std::cout << "Naiv Par:\tTime was " << (t1 - t0).seconds() << "s - Naiv-Parallel\n";
+	}
 
 	// Strassen-Algorithmus: Non-Tasks
-	resetValuesMatrix(C1, M_SIZE);
-	t0 = tick_count::now();
-	strassenRecursive(C1, A, B, M_SIZE);
-	t1 = tick_count::now();
-	printMatrix(C1, "C1 = A * B");
-	std::cout << "RSMULT: Time was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Non-Tasks\n";
-	compareMatrices(C1, C2, M_SIZE) ? std::cout << "RSMULT: Matrizen ungleich\n" : std::cout << "RSMULT: OK\n";
+	if (RUN_STRASSEN_SEQ != 0) {
+		resetValuesMatrix(C1, M_SIZE);
+		t0 = tick_count::now();
+		strassenRecursive(C1, A, B, M_SIZE);
+		t1 = tick_count::now();
+		printMatrix(C1, "C1 = A * B");
+		std::cout << "Strassen Seq:\tTime was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Non-Tasks\n";
+		if (RUN_NAIV_PAR) {
+			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Strassen Seq:\tMatrizen ungleich\n" : std::cout << "Strassen Seq:\tOK\n";
+		}
+	}
 
 	// Strassen-Algorithmus: Tasks
-	resetValuesMatrix(C1, M_SIZE);
-	t0 = tick_count::now();
-	task::spawn_root_and_wait(*new (task::allocate_root()) Strassen(C1, A, B, M_SIZE));
-	t1 = tick_count::now();
-	printMatrix(C1, "C1 = A * B");
-	std::cout << "PSMULT: Time was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Tasks\n";
-	compareMatrices(C1, C2, M_SIZE) ? std::cout << "PSMULT: Matrizen ungleich\n" : std::cout << "PSMULT: OK\n";
+	if (RUN_STRASSEN_PAR != 0) {
+		resetValuesMatrix(C1, M_SIZE);
+		t0 = tick_count::now();
+		task::spawn_root_and_wait(*new (task::allocate_root()) Strassen(C1, A, B, M_SIZE));
+		t1 = tick_count::now();
+		printMatrix(C1, "C1 = A * B");
+		std::cout << "Strassen Par:\tTime was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Tasks\n";
+		if (RUN_NAIV_PAR) {
+			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Strassen Par:\tMatrizen ungleich\n" : std::cout << "Strassen Par:\tOK\n";
+		}
+	}
 
 	std::cout << "\n\nEND\n" ;
 	return 0;
