@@ -14,13 +14,11 @@
 #include "Definitions.h"
 #include <iomanip> 			// Formatierung für Matrix-Ausgabe
 #include <iostream>
+#include <math.h>			// fabs
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <math.h>			// fabs
 #include <string.h>
-
-#include <stdlib.h>
+#include <time.h>
 
 inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
