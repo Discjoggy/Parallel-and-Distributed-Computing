@@ -39,6 +39,10 @@ typedef std::vector<InnerArray> Matrix;
 #define THRESHOLD 0.001								// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
 #define NO_BITWISE 1								// Keine arithmetischen operationen mit Shiftings loesen (Nur Ganzzahlen!)
 
+static int RUN_NAIV_SEQ 		= 0;				// Naiven Algorithmus sequentiell ausfuehren
+static int RUN_NAIV_PAR 		= 0;				// Naiven Algorithmus parallel ausfuehren
+static int RUN_STRASSEN_SEQ 	= 1;				// Strassen-Algorithmus sequentiell ausfuehren
+static int RUN_STRASSEN_PAR 	= 1;				// Strassen-Algorithmus parallel ausfuehren
 
 #define POW 3										// 2^POW
 static M_SIZE_TYPE M_SIZE	= (2 << POW);			// Dimension der Matrix (SIZE x SIZE)
