@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 		printMatrix(C1, "C1 = A * B");
 		std::cout << "Strassen Seq:\tTime was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Non-Tasks\n";
 		if (RUN_NAIV_PAR) {
-			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Strassen Seq:\tMatrizen ungleich\n" : std::cout << "Strassen Seq:\tOK\n";
+			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Num stability:\tSome differences!\n" : std::cout << "Num stability:\tOK\n";
 		}
 	}
 
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 		printMatrix(C1, "C1 = A * B");
 		std::cout << "Strassen Par:\tTime was " << (t1 - t0).seconds() << "s - Strassen-Alg.: Tasks\n";
 		if (RUN_NAIV_PAR) {
-			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Strassen Par:\tMatrizen ungleich\n" : std::cout << "Strassen Par:\tOK\n";
+			compareMatrices(C1, C2, M_SIZE) ? std::cout << "Num stability:\tSome differences!\n" : std::cout << "Num stability:\tOK\n";
 		}
 	}
 
