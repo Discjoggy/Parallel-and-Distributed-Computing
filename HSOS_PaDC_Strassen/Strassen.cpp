@@ -36,16 +36,15 @@ tbb::task* Strassen::execute() {
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
 				A11[i][j] = A[i][j];
-				A12[i][j] = A[i][jPlusNewN];
+				A12[i][j] = A[i][j + newN];
 				A21[i][j] = A[iPlusNewN][j];
-				A22[i][j] = A[iPlusNewN][jPlusNewN];
+				A22[i][j] = A[iPlusNewN][j + newN];
 
 				B11[i][j] = B[i][j];
-				B12[i][j] = B[i][jPlusNewN];
+				B12[i][j] = B[i][j + newN];
 				B21[i][j] = B[iPlusNewN][j];
-				B22[i][j] = B[iPlusNewN][jPlusNewN];
+				B22[i][j] = B[iPlusNewN][j + newN];
 			}
 		}
 
@@ -60,7 +59,8 @@ tbb::task* Strassen::execute() {
 		Matrix M3(newN, InnerArray(newN));
 		Matrix tmp1M3(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M3, B12, B22, newN);
-		spawn(*new (allocate_child()) Strassen(M3, A11, tmp1M3, newN));
+		set_ref_count(3);
+		spawn_and_wait_for_all(*new (allocate_child()) Strassen(M3, A11, tmp1M3, newN));
 
 		// M4 = A22 * (B21 - B11)
 		Matrix M4(newN, InnerArray(newN));
@@ -72,24 +72,22 @@ tbb::task* Strassen::execute() {
 		Matrix M5(newN, InnerArray(newN));
 		Matrix tmp1M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M5, A11, A12, newN);
-		set_ref_count(5);
+		set_ref_count(3);
 		spawn_and_wait_for_all(*new (allocate_child()) Strassen(M5, tmp1M5, B22, newN));
 
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN 	= j + newN;
 				C[i][j] 				= M4[i][j] - M5[i][j];
-				C[i][jPlusNewN] 		= M3[i][j] + M5[i][j];
+				C[i][j + newN] 			= M3[i][j] + M5[i][j];
 				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
-				C[iPlusNewN][jPlusNewN] = M3[i][j] - M2[i][j];
+				C[iPlusNewN][j + newN] 	= M3[i][j] - M2[i][j];
 			}
 		}
 
-		M5.clear(); M5.shrink_to_fit();
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M2[i][j] = M3[i][j] = M4[i][j] = 0;
+				M2[i][j] = M3[i][j] = M4[i][j] = M5[i][j] = 0;
 			}
 		}
 
@@ -101,11 +99,10 @@ tbb::task* Strassen::execute() {
 		spawn(*new (allocate_child()) Strassen(M2, tmp1M2, tmp1M5, newN));
 
 		// M6 = (A21 - A11) * (B11 + B12)
-		// Reuse: M6 = M3 | tmp1M6 = tmp1M3 | tmp2M6 = tmp2M3
-		Matrix tmp2M3(newN, InnerArray(newN));
+		// Reuse: M6 = M3 | tmp1M6 = tmp1M3 | M5 = tmp2M3
 		matrixSubSeq(tmp1M3, A21, A11, newN);
-		matrixAddSeq(tmp2M3, B11, B12, newN);
-		spawn(*new (allocate_child()) Strassen(M3, tmp1M3, tmp2M3, newN));
+		matrixAddSeq(M5, B11, B12, newN);
+		spawn(*new (allocate_child()) Strassen(M3, tmp1M3, M5, newN));
 
 		// M7 = (A12 - A22) * (B21 + B22)
 		// Reuse: M7 = M4 | tmp1M7 = tmp1M5 | tmp2M7 = tmp2M4
@@ -123,27 +120,18 @@ tbb::task* Strassen::execute() {
 			}
 		}
 
-		M2.clear(); M2.shrink_to_fit();
-		M3.clear(); M3.shrink_to_fit();
-		M4.clear(); M4.shrink_to_fit();
-
-		A11.clear(); A11.shrink_to_fit();
-		A12.clear(); A12.shrink_to_fit();
-		A21.clear(); A21.shrink_to_fit();
-		A22.clear(); A22.shrink_to_fit();
-
-		B11.clear(); B11.shrink_to_fit();
-		B12.clear(); B12.shrink_to_fit();
-		B21.clear(); B21.shrink_to_fit();
-		B22.clear(); B22.shrink_to_fit();
-
-		tmp1M2.clear(); tmp1M2.shrink_to_fit();
-		tmp1M3.clear(); tmp1M3.shrink_to_fit();
-		tmp1M4.clear(); tmp1M4.shrink_to_fit();
-		tmp1M5.clear(); tmp1M5.shrink_to_fit();
-
-		tmp2M3.clear(); tmp2M3.shrink_to_fit();
-		tmp2M4.clear(); tmp2M4.shrink_to_fit();
+//		M2.clear(); M3.clear(); M4.clear();
+//		A11.clear(); A12.clear();A21.clear(); A22.clear();
+//		B11.clear(); B12.clear(); B21.clear(); B22.clear();
+//		tmp1M2.clear(); tmp1M3.clear(); tmp1M4.clear(); tmp1M5.clear();
+//		tmp2M4.clear();
+//#if __cplusplus >= 201103L
+//		M2.shrink_to_fit(); M3.shrink_to_fit(); M4.shrink_to_fit();
+//		A11.shrink_to_fit(); A12.shrink_to_fit(); A21.shrink_to_fit(); A22.shrink_to_fit();
+//		B11.shrink_to_fit(); B12.shrink_to_fit(); B21.shrink_to_fit(); B22.shrink_to_fit();
+//		tmp1M2.shrink_to_fit(); tmp1M3.shrink_to_fit(); tmp1M4.shrink_to_fit(); tmp1M5.shrink_to_fit();
+//		tmp2M4.shrink_to_fit();
+//#endif
  	}
 	return NULL;
 }
@@ -176,16 +164,15 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
 				A11[i][j] = A[i][j];
-				A12[i][j] = A[i][jPlusNewN];
+				A12[i][j] = A[i][j + newN];
 				A21[i][j] = A[iPlusNewN][j];
-				A22[i][j] = A[iPlusNewN][jPlusNewN];
+				A22[i][j] = A[iPlusNewN][j + newN];
 
 				B11[i][j] = B[i][j];
-				B12[i][j] = B[i][jPlusNewN];
+				B12[i][j] = B[i][j + newN];
 				B21[i][j] = B[iPlusNewN][j];
-				B22[i][j] = B[iPlusNewN][jPlusNewN];
+				B22[i][j] = B[iPlusNewN][j + newN];
 			}
 		}
 
@@ -214,18 +201,16 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			M_SIZE_TYPE iPlusNewN = i + newN;
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M_SIZE_TYPE jPlusNewN = j + newN;
 				C[i][j] 				= M4[i][j] - M5[i][j];
-				C[i][jPlusNewN] 		= M3[i][j] + M5[i][j];
+				C[i][j + newN] 			= M3[i][j] + M5[i][j];
 				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
-				C[iPlusNewN][jPlusNewN] = M3[i][j] - M2[i][j];
+				C[iPlusNewN][j + newN] 	= M3[i][j] - M2[i][j];
 			}
 		}
 
-		M5.clear(); M5.shrink_to_fit();
 		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
 			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				M2[i][j] = M3[i][j] = M4[i][j] = 0;
+				 M2[i][j] = M3[i][j] = M4[i][j] = M5[i][j] = 0;
 			}
 		}
 
@@ -254,21 +239,15 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 			}
 		}
 
-		M2.clear(); M2.shrink_to_fit();
-		M3.clear(); M3.shrink_to_fit();
-		M4.clear(); M4.shrink_to_fit();
-
-		A11.clear(); A11.shrink_to_fit();
-		A12.clear(); A12.shrink_to_fit();
-		A21.clear(); A21.shrink_to_fit();
-		A22.clear(); A22.shrink_to_fit();
-
-		B11.clear(); B11.shrink_to_fit();
-		B12.clear(); B12.shrink_to_fit();
-		B21.clear(); B21.shrink_to_fit();
-		B22.clear(); B22.shrink_to_fit();
-
-		tmp1.clear(); tmp1.shrink_to_fit();
-		tmp2.clear(); tmp2.shrink_to_fit();
+//		M2.clear(); M3.clear(); M4.clear();
+//		A11.clear(); A12.clear();A21.clear(); A22.clear();
+//		B11.clear(); B12.clear(); B21.clear(); B22.clear();
+//		tmp1.clear(); tmp2.clear(); tmp2.clear();
+//#if __cplusplus >= 201103L
+//		M2.shrink_to_fit(); M3.shrink_to_fit(); M4.shrink_to_fit();
+//		A11.shrink_to_fit(); A12.shrink_to_fit(); A21.shrink_to_fit(); A22.shrink_to_fit();
+//		B11.shrink_to_fit(); B12.shrink_to_fit(); B21.shrink_to_fit(); B22.shrink_to_fit();
+//		tmp1.shrink_to_fit(); tmp2.shrink_to_fit(); tmp2.shrink_to_fit();
+//#endif
 	}
 }
