@@ -11,7 +11,6 @@
 #ifndef SRC_HELPER_H_
 #define SRC_HELPER_H_
 
-#include "Definitions.h"
 #include <iomanip> 			// Formatierung für Matrix-Ausgabe
 #include <iostream>
 #include <math.h>			// fabs
@@ -19,6 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include "Definitions.h"
 
 inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
@@ -157,19 +158,16 @@ inline void resetValuesMatrix(Matrix& M, const M_SIZE_TYPE& size, const M_VAL_TY
 *  @param  matrixName  Name der Matrix (optional).
 */
 inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
-	std::cout << "\n";
-	M_SIZE_TYPE mSize = M.size();
-	if (M.size() > 20) {
-#if DEBUG
+	const M_SIZE_TYPE mSize = M.size();
+	if (mSize > 20) {
 		std::cout << "Dimension of matrix ";
-		if (matrixName != NULL) {
+		if (matrixName != NULL && strlen(matrixName) > 0) {
 			std::cout << matrixName;
 		}
-		std::cout << " are bigger than 20x20!\n";
-#endif
+		std::cout << " is bigger than 20x20!\n";
 		return;
 	}
-	if (matrixName != NULL) {
+	if (matrixName != NULL && strlen(matrixName) > 0) {
 		std::cout << "Matrix " << matrixName << ":\n";
 	}
 	for (M_SIZE_TYPE i = 0; i < mSize; ++i) {
