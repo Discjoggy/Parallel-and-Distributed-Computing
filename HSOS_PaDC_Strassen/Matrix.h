@@ -63,8 +63,9 @@ inline void matrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
 inline void matrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE k = 0; k < n; ++k) {
+			const M_VAL_TYPE a = A[i][k];
 			for (M_SIZE_TYPE j = 0; j < n; ++j) {
-				C[i][j] += A[i][k] * B[k][j];
+				C[i][j] += a * B[k][j];
 			}
 		}
 	}
@@ -133,8 +134,9 @@ struct MatrixMultPBody: public MatrixPBody {
 	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
 		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
 			for (M_SIZE_TYPE k = 0; k < n; ++k) {
+				const M_VAL_TYPE a = A[i][k];
 				for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
-					C[i][j] += A[i][k] * B[k][j];
+					C[i][j] += a * B[k][j];
 				}
 			}
 		}
