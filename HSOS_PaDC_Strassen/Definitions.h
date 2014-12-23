@@ -15,7 +15,7 @@
 #include <vector>
 
 typedef uint_fast32_t M_SIZE_TYPE;		// Groessentyp der Matrizen, Schleifenzaehler usw.
-typedef int_least32_t M_VAL_TYPE;		// Typ der Werte in den Matrizen (Gut: int_least32_t)
+typedef double M_VAL_TYPE;				// Typ der Werte in den Matrizen (Gut: int_least32_t)
 
 #define ALL_TYPE 'S'					// Allocator-Typ
 #if ALL_TYPE == 'S'
@@ -32,12 +32,11 @@ typedef std::vector<InnerArray> Matrix;
 #endif
 
 #define USE_PARTITIONS 1				// Aktiviert partitionierte Strassen-Algorithmen (bspw. Half-And-Half)
-#define DEBUG 1							// Debuggen? (Z. B. Verwendung von Consolen-Ausgaben, Konstanten Werten usw.)
+#define DEBUG 0							// Debuggen? (Z. B. Verwendung von Consolen-Ausgaben, Konstanten Werten usw.)
 #define MAX_RAND_VAL RAND_MAX / 50		// Zufallszahlen bis (21474836472147483647 / X) z.B. 50 oder 750
 #define STD_WIDTH 9						// Matrixausgabe: Indexbreite
 #define STD_PRECISION 5					// Matrixausgabe: Genauigkeit bei Gleitkommawerten
 #define THRESHOLD 0.001					// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
-#define NO_BITWISE 1					// Keine arithmetischen operationen mit Shiftings loesen (Nur Ganzzahlen!)
 
 // extern - globals
 extern int RUN_NAIV_SEQ;				// Naiven Algorithmus sequentiell ausfuehren
