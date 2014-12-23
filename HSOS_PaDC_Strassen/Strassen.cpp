@@ -16,6 +16,7 @@
 *  Strassen-Algorithmus wird in dieser Methode rekursiv ausgefuerht.
 *  @return tbb::task.
 */
+#ifdef USE_PARTITIONS
 tbb::task* Strassen::execute() {
 	if (n <= CUT_OFF) {
 		matrixMultSeq(C, A, B, n);
@@ -118,109 +119,8 @@ tbb::task* Strassen::execute() {
  	}
 	return NULL;
 }
-
-/**
-*  @brief  Rekursive Methode, welche zwei Matrizen nach dem
-*  Strassen-Algorithmus errechnet.
-*  @param  C  Matrix C (Ergebnismatrix).
-*  @param  A  Matrix A.
-*  @param  B  Matrix B.
-*  @param  n  Matrixdimension (NxN).
-*/
-void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
-	if (n <= CUT_OFF) {
-		matrixMultSeq(C, A, B, n);
-	}
-	else {
-		const M_SIZE_TYPE newN = n >> 1;
-		// Devide & Conquer
-		Matrix A11(newN, InnerArray(newN));
-		Matrix A12(newN, InnerArray(newN));
-		Matrix A21(newN, InnerArray(newN));
-		Matrix A22(newN, InnerArray(newN));
-
-		Matrix B11(newN, InnerArray(newN));
-		Matrix B12(newN, InnerArray(newN));
-		Matrix B21(newN, InnerArray(newN));
-		Matrix B22(newN, InnerArray(newN));
-
-		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
-			M_SIZE_TYPE iPlusNewN = i + newN;
-			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				A11[i][j] = A[i][j];
-				A12[i][j] = A[i][j + newN];
-				A21[i][j] = A[iPlusNewN][j];
-				A22[i][j] = A[iPlusNewN][j + newN];
-
-				B11[i][j] = B[i][j];
-				B12[i][j] = B[i][j + newN];
-				B21[i][j] = B[iPlusNewN][j];
-				B22[i][j] = B[iPlusNewN][j + newN];
-			}
-		}
-
-
-		// M2 = (A21 + A22) * B11
-		Matrix tmp1(newN, InnerArray(newN));
-		Matrix M2(newN, InnerArray(newN));
-		matrixAddSeq(tmp1, A21, A22, newN);
-		strassenRecursive(M2, tmp1, B11, newN);
-
-		// M3 = A11 * (B12 - B22)
-		Matrix M3(newN, InnerArray(newN));
-		matrixSubSeq(tmp1, B12, B22, newN);
-		strassenRecursive(M3, A11, tmp1, newN);
-
-		// M4 = A22 * (B21 - B11)
-		Matrix M4(newN, InnerArray(newN));
-		matrixSubSeq(tmp1, B21, B11, newN);
-		strassenRecursive(M4, A22, tmp1, newN);
-
-		// M5 = (A11 + A12) * B22128
-		Matrix M5(newN, InnerArray(newN));
-		matrixAddSeq(tmp1, A11, A12, newN);
-		strassenRecursive(M5, tmp1, B22, newN);
-
-		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
-			M_SIZE_TYPE iPlusNewN = i + newN;
-			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				C[i][j] 				= M4[i][j] - M5[i][j];
-				C[i][j + newN] 			= M3[i][j] + M5[i][j];
-				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
-				C[iPlusNewN][j + newN] 	= M3[i][j] - M2[i][j];
-
-				M2[i][j] = M3[i][j] = M4[i][j] = M5[i][j] = 0;
-			}
-		}
-
-
-		// M1 = (A11 + A22) * (B11 + B22)
-		Matrix tmp2(newN, InnerArray(newN));
-		matrixAddSeq(tmp1, A11, A22, newN);
-		matrixAddSeq(tmp2, B11, B22, newN);
-		strassenRecursive(M2, tmp1, tmp2, newN);
-
-		// M6 = (A21 - A11) * (B11 + B12)
-		matrixSubSeq(tmp1, A21, A11, newN);
-		matrixAddSeq(tmp2, B11, B12, newN);
-		strassenRecursive(M3, tmp1, tmp2, newN);
-
-		// M7 = (A12 - A22) * (B21 + B22)
-		matrixSubSeq(tmp1, A12, A22, newN);
-		matrixAddSeq(tmp2, B21, B22, newN);
-		strassenRecursive(M4, tmp1, tmp2, newN);
-
-		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
-			M_SIZE_TYPE iPlusNewN = i + newN;
-			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
-				C[i][j] 				+= M2[i][j] + M4[i][j];
-				C[iPlusNewN][j + newN] 	+= M2[i][j] + M3[i][j];
-			}
-		}
-	}
-}
-
-/*tbb::task* Strassen::execute() {
+#else
+tbb::task* Strassen::execute() {
 	if (n <= CUT_OFF) {
 		matrixMultSeq(C, A, B, n);
 	}
@@ -313,7 +213,110 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 	}
 	return NULL;
 }
+#endif
 
+/**
+*  @brief  Rekursive Methode, welche zwei Matrizen nach dem
+*  Strassen-Algorithmus errechnet.
+*  @param  C  Matrix C (Ergebnismatrix).
+*  @param  A  Matrix A.
+*  @param  B  Matrix B.
+*  @param  n  Matrixdimension (NxN).
+*/
+#if USE_PARTITIONS
+void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+	if (n <= CUT_OFF) {
+		matrixMultSeq(C, A, B, n);
+	}
+	else {
+		const M_SIZE_TYPE newN = n >> 1;
+		// Devide & Conquer
+		Matrix A11(newN, InnerArray(newN));
+		Matrix A12(newN, InnerArray(newN));
+		Matrix A21(newN, InnerArray(newN));
+		Matrix A22(newN, InnerArray(newN));
+
+		Matrix B11(newN, InnerArray(newN));
+		Matrix B12(newN, InnerArray(newN));
+		Matrix B21(newN, InnerArray(newN));
+		Matrix B22(newN, InnerArray(newN));
+
+		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
+			M_SIZE_TYPE iPlusNewN = i + newN;
+			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
+				A11[i][j] = A[i][j];
+				A12[i][j] = A[i][j + newN];
+				A21[i][j] = A[iPlusNewN][j];
+				A22[i][j] = A[iPlusNewN][j + newN];
+
+				B11[i][j] = B[i][j];
+				B12[i][j] = B[i][j + newN];
+				B21[i][j] = B[iPlusNewN][j];
+				B22[i][j] = B[iPlusNewN][j + newN];
+			}
+		}
+
+
+		// M2 = (A21 + A22) * B11
+		Matrix tmp1(newN, InnerArray(newN));
+		Matrix M2(newN, InnerArray(newN));
+		matrixAddSeq(tmp1, A21, A22, newN);
+		strassenRecursive(M2, tmp1, B11, newN);
+
+		// M3 = A11 * (B12 - B22)
+		Matrix M3(newN, InnerArray(newN));
+		matrixSubSeq(tmp1, B12, B22, newN);
+		strassenRecursive(M3, A11, tmp1, newN);
+
+		// M4 = A22 * (B21 - B11)
+		Matrix M4(newN, InnerArray(newN));
+		matrixSubSeq(tmp1, B21, B11, newN);
+		strassenRecursive(M4, A22, tmp1, newN);
+
+		// M5 = (A11 + A12) * B22128
+		Matrix M5(newN, InnerArray(newN));
+		matrixAddSeq(tmp1, A11, A12, newN);
+		strassenRecursive(M5, tmp1, B22, newN);
+
+		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
+			M_SIZE_TYPE iPlusNewN = i + newN;
+			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
+				C[i][j] 				= M4[i][j] - M5[i][j];
+				C[i][j + newN] 			= M3[i][j] + M5[i][j];
+				C[iPlusNewN][j] 		= M2[i][j] + M4[i][j];
+				C[iPlusNewN][j + newN] 	= M3[i][j] - M2[i][j];
+
+				M2[i][j] = M3[i][j] = M4[i][j] = M5[i][j] = 0;
+			}
+		}
+
+
+		// M1 = (A11 + A22) * (B11 + B22)
+		Matrix tmp2(newN, InnerArray(newN));
+		matrixAddSeq(tmp1, A11, A22, newN);
+		matrixAddSeq(tmp2, B11, B22, newN);
+		strassenRecursive(M2, tmp1, tmp2, newN);
+
+		// M6 = (A21 - A11) * (B11 + B12)
+		matrixSubSeq(tmp1, A21, A11, newN);
+		matrixAddSeq(tmp2, B11, B12, newN);
+		strassenRecursive(M3, tmp1, tmp2, newN);
+
+		// M7 = (A12 - A22) * (B21 + B22)
+		matrixSubSeq(tmp1, A12, A22, newN);
+		matrixAddSeq(tmp2, B21, B22, newN);
+		strassenRecursive(M4, tmp1, tmp2, newN);
+
+		for (M_SIZE_TYPE i = 0; i < newN; ++i) {
+			M_SIZE_TYPE iPlusNewN = i + newN;
+			for (M_SIZE_TYPE j = 0; j < newN; ++j) {
+				C[i][j] 				+= M2[i][j] + M4[i][j];
+				C[iPlusNewN][j + newN] 	+= M2[i][j] + M3[i][j];
+			}
+		}
+	}
+}
+#else
 void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	if (n <= CUT_OFF) {
 		matrixMultSeq(C, A, B, n);
@@ -397,4 +400,5 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 			}
 		}
 	}
-}*/
+}
+#endif
