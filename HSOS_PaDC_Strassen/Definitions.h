@@ -11,8 +11,8 @@
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
-#include <vector>
 #include <stdint.h>
+#include <vector>
 
 typedef uint_fast32_t M_SIZE_TYPE;		// Groessentyp der Matrizen, Schleifenzaehler usw.
 typedef int_least32_t M_VAL_TYPE;		// Typ der Werte in den Matrizen (Gut: int_least32_t)
@@ -46,6 +46,6 @@ extern int RUN_STRASSEN_PAR;			// Strassen-Algorithmus parallel ausfuehren
 
 extern M_SIZE_TYPE M_SIZE;				// Dimension der Matrix (SIZE x SIZE)
 extern M_SIZE_TYPE CUT_OFF;				// Ab welcher Dimension soll naiver Algorithmus eingesetzt werden? Min. CUT_OFF x CUT_OFF = 4! //(2 << (POW >> 1));
-extern unsigned int NO_THREADS;			// Anzahl zu nutzender Threads
+extern unsigned NO_THREADS;				// Anzahl zu nutzender Threads
 
 #endif
