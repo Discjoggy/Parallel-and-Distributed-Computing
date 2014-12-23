@@ -11,6 +11,7 @@
 #ifndef SRC_HELPER_H_
 #define SRC_HELPER_H_
 
+#include "Definitions.h"
 #include <iomanip> 			// Formatierung für Matrix-Ausgabe
 #include <iostream>
 #include <math.h>			// fabs
@@ -19,12 +20,21 @@
 #include <string.h>
 #include <time.h>
 
-#include "Definitions.h"
-
+/**
+*  @brief Prueft, ob ein Wert 2^x ist.
+*  @param  x  Zu pruefender Wert.
+*  @return 0 falls der Wert 2^k ist, andernfalls != 0.
+*/
 inline int isPowerOfTwo(const M_SIZE_TYPE& x) {
   return ((x != 0) && ((x & (~x + 1)) == x));
 }
 
+
+/**
+*  @brief  Gibt die verfuegbaren Optionen aus.
+*  @param  name  Frei waehlbarer Name.
+*  @return Gibt stets den Wert 1 zurueck.
+*/
 inline int show_usage(const char* name) {
     std::cerr << "Usage: " << name << " -<option> <value>\n"
 			  << "Options:\n"
@@ -36,6 +46,12 @@ inline int show_usage(const char* name) {
     return 1;
 }
 
+/**
+*  @brief  Extrahiert die uebergebenen Argumente, falls angegeben.
+*  @param  argc  Anzahl der Argumente.
+*  @param  argv  Inhalt der einzelnen Argumente.
+*  @return Gibt bei erfolgreicher initialisierung 0 zurueck, andernfalls != 0;
+*/
 inline int init_arguments(const int argc, char* argv[]) {
 	if (argc > 0) {
 		if ((argc -1) % 2 != 0) {
@@ -190,7 +206,7 @@ inline void printMatrix(const Matrix& M, const char* matrixName = NULL) {
 inline int compareMatrices(const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
-			if (fabs(A[i][j] - B[i][j]) > THRESHOLD) {
+			if (fabs((double)(A[i][j] - B[i][j])) > THRESHOLD) {
 				std::cout << "A[" << i << "][" << j << "](" << A[i][j] << ") != B[" << i << "][" << j << "](" << B[i][j] << ") ";
 				return 1;
 			}
