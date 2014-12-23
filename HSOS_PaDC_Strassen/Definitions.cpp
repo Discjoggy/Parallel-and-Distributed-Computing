@@ -17,4 +17,4 @@ int RUN_STRASSEN_PAR 		= 1;
 
 M_SIZE_TYPE M_SIZE			= 4;
 M_SIZE_TYPE CUT_OFF 		= 64;
-unsigned int NO_THREADS		= 0;
+unsigned NO_THREADS			= 0;
