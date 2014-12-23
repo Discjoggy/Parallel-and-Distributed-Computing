@@ -12,12 +12,7 @@
 #define STRASSEN_H_
 
 #include "Definitions.h"
-#include "Helper.h"
 #include "Matrix.h"
-#include <tbb/blocked_range2d.h>
-#include <tbb/parallel_for.h>
-#include <tbb/task.h>
-#include <vector>
 
 /**
 *  @brief  Repraesentiert eine Klasse, welche Matrixmultiplikationen
