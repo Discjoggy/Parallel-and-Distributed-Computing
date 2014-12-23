@@ -35,7 +35,7 @@ inline void matrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
 }
 
 /**
- *  @brief  Addiert Matrix B auf Matrix A sequentiell.
+ *  @brief  Addiert Matrix B zu Matrix A sequentiell.
  *  @param  C  Matrix C (Ergebnismatrix).
  *  @param  A  Matrix A.
  *  @param  B  Matrix B.
