@@ -22,7 +22,7 @@
 using namespace tbb;
 
 /**
-*  @brief  Main-Methode zum Ausfuehren der verschiedenen Algorithmen.
+*  @brief  Main-Methode zum Ausfuehren der Algorithmen.
 */
 int main(int argc, char* argv[]) {
 	NO_THREADS = tbb::task_scheduler_init::default_num_threads();
