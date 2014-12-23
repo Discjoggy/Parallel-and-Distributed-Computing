@@ -25,11 +25,7 @@
 inline void matrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
-#if NO_BITWISE
 			C[i][j] = A[i][j] - B[i][j];
-#else
-			C[i][j] = (A[i][j] ^ B[i][j]) & B[i][j];
-#endif
 		}
 	}
 }
@@ -44,11 +40,7 @@ inline void matrixSubSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
 inline void matrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE j = 0; j < n; ++j) {
-#if NO_BITWISE
 			C[i][j] = A[i][j] + B[i][j];
-#else
-			C[i][j] = (A[i][j] ^ B[i][j]);
-#endif
 		}
 	}
 }
@@ -61,6 +53,7 @@ inline void matrixAddSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SI
  *  @param  n  Matrixdimension (NxN).
  */
 inline void matrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE_TYPE& n) {
+#if USE_IKJ
 	for (M_SIZE_TYPE i = 0; i < n; ++i) {
 		for (M_SIZE_TYPE k = 0; k < n; ++k) {
 			const M_VAL_TYPE a = A[i][k];
@@ -69,6 +62,15 @@ inline void matrixMultSeq(Matrix& C, const Matrix& A, const Matrix& B, const M_S
 			}
 		}
 	}
+#else
+	for (M_SIZE_TYPE i = 0; i < n; ++i) {
+		for (M_SIZE_TYPE j = 0; j < n; ++j) {
+			for (M_SIZE_TYPE k = 0; k < n; ++k) {
+				C[i][j] += A[i][k] * B[k][j];
+			}
+		}
+	}
+#endif
 }
 
 /**
@@ -94,11 +96,7 @@ struct MatrixSubPBody: public MatrixPBody {
 	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
 		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
 			for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
-#if NO_BITWISE
 				C[i][j] = A[i][j] - B[i][j];
-#else
-				C[i][j] = (A[i][j] ^ B[i][j]) & B[i][j];
-#endif
 			}
 		}
 	}
@@ -113,11 +111,7 @@ struct MatrixAddPBody: public MatrixPBody {
 	void operator()(const tbb::blocked_range2d<M_SIZE_TYPE>& range) const {
 		for (M_SIZE_TYPE i = range.rows().begin(); i != range.rows().end(); ++i) {
 			for (M_SIZE_TYPE j = range.cols().begin(); j != range.cols().end(); ++j) {
-#if NO_BITWISE
 				C[i][j] = A[i][j] + B[i][j];
-#else
-				C[i][j] = (A[i][j] ^ B[i][j]);
-#endif
 			}
 		}
 	}
