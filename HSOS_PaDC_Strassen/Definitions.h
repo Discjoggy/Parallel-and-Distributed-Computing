@@ -37,6 +37,7 @@ typedef std::vector<InnerArray> Matrix;
 #define STD_WIDTH 9						// Matrixausgabe: Indexbreite
 #define STD_PRECISION 5					// Matrixausgabe: Genauigkeit bei Gleitkommawerten
 #define THRESHOLD 0.001					// Max. Abweichung als Ungenauigkeit der Gleitkommawerte
+#define USE_IKJ 1		 				// Schnellere Matrizenmultiplikation (statt ijk)
 
 // extern - globals
 extern int RUN_NAIV_SEQ;				// Naiven Algorithmus sequentiell ausfuehren
