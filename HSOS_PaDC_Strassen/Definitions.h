@@ -31,6 +31,7 @@ typedef std::vector<M_VAL_TYPE> InnerArray;
 typedef std::vector<InnerArray> Matrix;
 #endif
 
+#define USE_PARTITIONS 1				// Aktiviert partitionierte Strassen-Algorithmen (bspw. Half-And-Half)
 #define DEBUG 1							// Debuggen? (Z. B. Verwendung von Consolen-Ausgaben, Konstanten Werten usw.)
 #define MAX_RAND_VAL RAND_MAX / 50		// Zufallszahlen bis (21474836472147483647 / X) z.B. 50 oder 750
 #define STD_WIDTH 9						// Matrixausgabe: Indexbreite
