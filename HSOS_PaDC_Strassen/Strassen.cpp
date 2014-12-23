@@ -54,20 +54,19 @@ tbb::task* Strassen::execute() {
 		Matrix M2(newN, InnerArray(newN));
 		Matrix tmp1M2(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M2, A21, A22, newN);
-		set_ref_count(3);
+		set_ref_count(5);
 		spawn(*new (allocate_child()) Strassen(M2, tmp1M2, B11, newN));
 
 		// M3 = A11 * (B12 - B22)
 		Matrix M3(newN, InnerArray(newN));
 		Matrix tmp1M3(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M3, B12, B22, newN);
-		spawn_and_wait_for_all(*new (allocate_child()) Strassen(M3, A11, tmp1M3, newN));
+		spawn(*new (allocate_child()) Strassen(M3, A11, tmp1M3, newN));
 
 		// M4 = A22 * (B21 - B11)
 		Matrix M4(newN, InnerArray(newN));
 		Matrix tmp1M4(newN, InnerArray(newN));
 		matrixSubSeq(tmp1M4, B21, B11, newN);
-		set_ref_count(3);
 		spawn(*new (allocate_child()) Strassen(M4, A22, tmp1M4, newN));
 
 		// M5 = (A11 + A12) * B22128
