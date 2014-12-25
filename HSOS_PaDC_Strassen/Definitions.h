@@ -27,7 +27,7 @@ struct Matrix {
 	const M_SIZE_TYPE& n;
     InnerArray mdArray;
 
-	M_SIZE_TYPE size() const _GLIBCXX_NOEXCEPT {
+	M_SIZE_TYPE size() const /*_GLIBCXX_NOEXCEPT*/ {
 		return n;
 	}
 
