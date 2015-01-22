@@ -69,7 +69,7 @@ tbb::task* Strassen::execute() {
 		matrixSubSeq(tmp1M4, B21, B11, newN);
 		spawn(*new (allocate_child()) Strassen(M4, A22, tmp1M4, newN));
 
-		// M5 = (A11 + A12) * B22128
+		// M5 = (A11 + A12) * B22
 		Matrix M5(newN, InnerArray(newN));
 		Matrix tmp1M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M5, A11, A12, newN);
@@ -178,7 +178,7 @@ tbb::task* Strassen::execute() {
 		matrixSubSeq(tmp1M4, B21, B11, newN);
 		spawn(*new (allocate_child()) Strassen(M4, A22, tmp1M4, newN));
 
-		// M5 = (A11 + A12) * B22128
+		// M5 = (A11 + A12) * B22
 		Matrix M5(newN, InnerArray(newN));
 		Matrix tmp1M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1M5, A11, A12, newN);
@@ -272,7 +272,7 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 		matrixSubSeq(tmp1, B21, B11, newN);
 		strassenRecursive(M4, A22, tmp1, newN);
 
-		// M5 = (A11 + A12) * B22128
+		// M5 = (A11 + A12) * B22
 		Matrix M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1, A11, A12, newN);
 		strassenRecursive(M5, tmp1, B22, newN);
@@ -372,7 +372,7 @@ void strassenRecursive(Matrix& C, const Matrix& A, const Matrix& B, const M_SIZE
 		matrixSubSeq(tmp1, B21, B11, newN);
 		strassenRecursive(M4, A22, tmp1, newN);
 
-		// M5 = (A11 + A12) * B22128
+		// M5 = (A11 + A12) * B22
 		Matrix M5(newN, InnerArray(newN));
 		matrixAddSeq(tmp1, A11, A12, newN);
 		strassenRecursive(M5, tmp1, B22, newN);
